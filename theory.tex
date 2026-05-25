@@ -1,0 +1,119 @@
+\section{Theoretical Guarantees: When Momentum Meets Search}\label{sec:theoretical_analysis}
+
+\paragraph{Aim of this section.}
+We formalize when (and why) a similarity-triggered, evolution-based strategy discovery mechanism---embedded in a shared, globally expanding strategy pool---improves code-generation search at scale. Our goal is twofold:
+(i) show that whenever the current pool is \emph{missing} a strategy that solves a nontrivial slice of problems, the similarity trigger will \emph{eventually} fire on one of those problems and discover a strictly better strategy (Theorem~\ref{thm:eventual-discovery});
+(ii) show that, under mild locality/transfer and success assumptions, the shared pool becomes \emph{$\varepsilon$-terminal} in finite (random) time almost surely, i.e., for almost every problem there will exist a strategy in the pool attaining value within $\varepsilon$ of the ground truth optimum (Theorem~\ref{thm:terminality}).
+
+\subsection{Setup, Assumptions, and Definitions}
+
+We consider a vast problem set with distribution $\mathcal D$ over initial states $s$. The \emph{true} value of applying strategy (action) $a$ at $s$ is $\mu_s(a)\in[0,1]$, and $V^*(s)=\sup_{a}\mu_s(a)$. At time $t$, the globally shared pool is $\mathcal A_t$; its best value at $s$ is $V_t(s)=\max_{a\in\mathcal A_t}\mu_s(a)$ and the suboptimality gap is $\Delta_t(s)=V^*(s)-V_t(s)$. 
+A similarity trigger monitors the $k$ most recent chosen strategies at a state $s$, $\{a_1,\dots,a_k\}$, via an \emph{inner-product} similarity $\mathrm{sim}(a_i,a_j)=\langle \phi(a_i),\phi(a_j)\rangle$ with $\|\phi(a)\|_2=1$. It fires when the average pairwise similarity $\bar S_k \triangleq \tfrac{2}{k(k-1)}\sum_{i<j}\langle\phi(a_i),\phi(a_j)\rangle$ exceeds a threshold $\theta\in(0,1)$.
+
+We use vanilla UCT at each state but restricted to the \emph{current} finite pool $\mathcal A_t$ for selection. When the trigger fires at $s$, a low-cost \emph{evolve} call proposes a new strategy $a_{\mathrm{new}}$ by combining a preferred and an underused strategy.\looseness=-1
+
+\begin{assumption}[UCT consistency on a fixed finite pool]
+\label{ass:uct-consistency}
+For a fixed finite $\mathcal A_t$, with bounded sub-Gaussian evaluation noise, UCT is consistent at any recurrent state $s$: the most-visited strategy converges to $\arg\max_{a\in\mathcal A_t}\mu_s(a)$, and empirical values concentrate around $\mu_s(\cdot)$ at the UCB rates of multi-armed bandits \citep{kocsis2006bandit}. 
+\end{assumption}
+
+\begin{remark}
+This is the standard layer-by-layer reduction to UCB at each node; we do not require global finite-time tree bounds, only per-node consistency on the \emph{current} pool.
+\end{remark}
+
+\begin{assumption}[Evolve success under standing gap]
+\label{ass:succ}
+There exists a nondecreasing $p(\cdot):(0,1]\to(0,1]$ such that whenever a trigger fires at $s$ with $\Delta_t(s)\ge\eta$, the evolve call returns an $a_{\mathrm{new}}$ satisfying 
+$\mu_s(a_{\mathrm{new}})\ge V_t(s)+\eta/2$
+with probability at least $p(\eta)$.
+\end{assumption}
+
+\begin{remark}
+This models the LLM-based evolution as a black-box operator with nonvanishing success when improvement of size $\eta$ truly exists at $s$.
+\end{remark}
+
+\begin{assumption}[Exposure of hard problems]
+\label{ass:exposure}
+Problems are sampled i.i.d.\ from $\mathcal D$. If a measurable set $\mathcal X$ has $\mathcal D(\mathcal X)>0$, then states in $\mathcal X$ are visited infinitely often almost surely.
+\end{assumption}
+
+\begin{remark}
+This is the usual ``no starvation'' assumption under i.i.d.\ sampling of a large workload.
+\end{remark}
+
+Finally, for $\varepsilon\in(0,1]$, define the $\varepsilon$-hard set and its mass
+\[
+H_t(\varepsilon)=\{s:\Delta_t(s)\ge\varepsilon\},\qquad w_t(\varepsilon)=\mathcal D\big(H_t(\varepsilon)\big).
+\]
+We will also use a \emph{local transfer} constant $\beta(\varepsilon)>0$: whenever $s\in H_t(\varepsilon)$, there exists a strategy $a_s$ and a measurable neighborhood $U(s)\ni s$ such that $\mathcal D(U(s)\cap H_t(\varepsilon))\ge\beta(\varepsilon)$ and $\mu_{s'}(a_s)\ge V^*(s')-\varepsilon$ for all $s'\in U(s)$.
+
+\subsection{Lemmas and Main Theorems}
+
+We first introduce a few lemmas to aid our theorems. 
+
+\begin{lemma}[Stagnation $\Rightarrow$ repeated triggers]
+\label{lem:trigger-repeat}
+Fix a state $s$. If $\Delta_t(s)\ge\delta>0$ persists while running UCT on a fixed finite $\mathcal A_t$, then the last-$k$ chosen strategies at $s$ become asymptotically collinear in $\phi(\cdot)$, hence $\bar S_k\ge\theta$ occurs infinitely often almost surely (and the trigger fires infinitely often).
+\end{lemma}
+
+\begin{proof}[Proof of Lemma~\ref{lem:trigger-repeat}]
+With a fixed $\mathcal A_t$, Assumption~\ref{ass:uct-consistency} implies the most-visited in-pool best action at $s$ dominates; thus the last-$k$ selections lie in a shrinking subset of $\mathcal A_t$ and their embeddings $\phi(a_i)$ become increasingly aligned, so their average pairwise inner product exceeds any fixed $\theta<1$ infinitely often. The trigger hence fires infinitely often.
+\end{proof}
+
+\begin{lemma}[Repeated triggers $+$ success $\Rightarrow$ improvement]
+\label{lem:geom}
+At a fixed $s$ with $\Delta_t(s)\ge\delta$, if each trigger produces an evolve attempt that succeeds with probability at least $p(\delta)$ (Assumption~\ref{ass:succ}), then with probability $1$ there is a finite trigger index at which an $a_{\mathrm{new}}$ with 
+$\mu_s(a_{\mathrm{new}})\ge V_t(s)+\delta/2$
+is added to the pool.
+\end{lemma}
+
+\begin{proof}[Proof of Lemma~\ref{lem:geom}]
+Each trigger yields an independent (or conditionally independent) Bernoulli with success probability $\ge p(\delta)$. The probability of $N$ consecutive failures is $\le (1-p(\delta))^N\to0$, so almost surely a success occurs in finite time, delivering an improvement $\ge\delta/2$ at $s$.
+\end{proof}
+
+\begin{lemma}[One success removes a fixed mass]
+\label{lem:mass}
+If an evolve attempt succeeds at some $s\in H_t(\varepsilon)$ and the resulting $a_{\mathrm{new}}$ satisfies $\mu_{s'}(a_{\mathrm{new}})\ge V^*(s')-\varepsilon$ for all $s'\in U(s)$, then 
+$w_{t+}(\varepsilon)\le w_t(\varepsilon)-\beta(\varepsilon)$.
+\end{lemma}
+
+\begin{proof}[Proof of Lemma~\ref{lem:mass}]
+By the local transfer property, the strategy produced at $s$ attains value at least $V^*(s')-\varepsilon$ on $U(s)$; all states in $U(s)\cap H_t(\varepsilon)$ become $\varepsilon$-easy and leave $H_t(\varepsilon)$. Since $\mathcal D\big(U(s)\cap H_t(\varepsilon)\big)\ge\beta(\varepsilon)$, the mass of the hard set drops by at least $\beta(\varepsilon)$.
+\end{proof}
+
+Now we introduce our main theoretical results in the following two theorems. 
+
+\begin{theorem}[Similarity triggers eventual discovery]
+\label{thm:eventual-discovery}
+Suppose there exists $\delta>0$ such that $H_t(\delta)$ has nonzero mass $w_t(\delta)>0$ whenever the current pool $\mathcal A_t$ lacks a $\delta$-improving strategy for those states. Under Assumptions~\ref{ass:uct-consistency}--\ref{ass:exposure}, with probability $1$ there exists a finite time $\tau$ at which a trigger fires on some $s\in H_t(\delta)$ and the evolved strategy $a_{\mathrm{new}}$ satisfies
+$\mu_s(a_{\mathrm{new}})\ge V_t(s)+\delta/2$,
+hence $V_{t}(s)$ increases by at least $\delta/2$.
+\end{theorem}
+
+\begin{proof}
+By exposure (Assumption~\ref{ass:exposure}), a state $s\in H_t(\delta)$ is visited infinitely often almost surely. With a fixed finite $\mathcal A_t$, UCT concentrates on the in-pool best at $s$ (Assumption~\ref{ass:uct-consistency}), so the last-$k$ chosen strategies at $s$ become highly similar; Lemma~\ref{lem:trigger-repeat} yields infinitely many triggers. Each trigger spawns an evolve attempt that succeeds with probability $\ge p(\delta)$ (Assumption~\ref{ass:succ}); by Lemma~\ref{lem:geom}, almost surely some attempt is successful in finite time, producing $a_{\mathrm{new}}$ with the stated improvement.
+\end{proof}
+
+\begin{theorem}[$\varepsilon$-terminality via measure decrease]
+\label{thm:terminality}
+Fix $\varepsilon\in(0,1)$. Assume:
+(i) whenever $w_t(\varepsilon)>0$, visits hit $H_t(\varepsilon)$ with probability $w_t(\varepsilon)$ (i.i.d.\ draws from $\mathcal D$);
+(ii) on a visit to $s\in H_t(\varepsilon)$, a (future) trigger occurs with probability at least $q(\varepsilon)>0$ (asymptotic stagnation under UCT on the current pool); 
+(iii) each triggered evolve attempt \emph{succeeds} with probability at least $p(\varepsilon)>0$ (Assumption~\ref{ass:succ});
+(iv) the local transfer constant $\beta(\varepsilon)>0$ holds. Then, with probability $1$, there exists a finite (random) time $T_\varepsilon$ such that $\mathcal A_{T_\varepsilon}$ is $\varepsilon$-terminal, i.e., $w_{T_\varepsilon}(\varepsilon)=0$. Moreover,
+\[
+\mathbb E[\#\text{ successes to reach }w(\varepsilon)=0]\le \left\lceil \frac{w_0(\varepsilon)}{\beta(\varepsilon)}\right\rceil,\qquad
+\mathbb E[T_\varepsilon]\ \le\ \frac{1}{q(\varepsilon)\,p(\varepsilon)\,\beta(\varepsilon)}.
+\]
+\end{theorem}
+
+\begin{proof}
+While $w_t(\varepsilon)>0$, a single step hits $H_t(\varepsilon)$ with probability $w_t(\varepsilon)$; conditioning on such a hit, a trigger occurs with probability $\ge q(\varepsilon)$, and given a trigger, evolve succeeds with probability $\ge p(\varepsilon)$. Hence the per-step success probability is at least $w_t(\varepsilon)\,q(\varepsilon)\,p(\varepsilon)$. 
+Each success removes at least $\beta(\varepsilon)$ mass from $w_t(\varepsilon)$ by Lemma~\ref{lem:mass}. Therefore, at most $\lceil w_0(\varepsilon)/\beta(\varepsilon)\rceil$ successes are needed to drive $w_t(\varepsilon)$ to zero deterministically; the expected number of steps between consecutive successes is at most $1/\big(w_t(\varepsilon)\,q(\varepsilon)\,p(\varepsilon)\big)\le 1/\big(q(\varepsilon)\,p(\varepsilon)\big)$, yielding the stated $\mathbb E[T_\varepsilon]$ bound. Almost-sure finiteness follows from the Borel--Cantelli (or geometric tail) argument applied to the independent i.i.d.\ sampling with nonvanishing per-step success probability bounded below as above.
+\end{proof}
+
+\paragraph{Remarks.}
+(i) Theorem~\ref{thm:eventual-discovery} formalizes the intuition that UCT’s in-pool consistency makes stagnation \emph{detectable} via high inner-product similarity, guaranteeing eventual triggering and improvement when a true gap persists.
+(ii) Theorem~\ref{thm:terminality} avoids topological detours: it proves $\varepsilon$-terminality by showing that each successful discovery removes a \emph{fixed measure} of $\varepsilon$-hard states, so only finitely many are needed to eliminate all mass almost surely.
+(iii) No $\varepsilon$-soft action selection is required for the statements; if present with a decaying GLIE schedule, it can only increase trigger frequency (absorbed into a larger $q(\varepsilon)$).
+
