@@ -607,21 +607,7 @@ We introduced \textbf{EvoMo}, an inference-time scaling framework that unifies \
 \section{Limitations}
 Our evaluation focuses mainly on code-generation and safety-detection settings, so broader validation is still needed for open-ended natural language reasoning, multilingual tasks, and domains with different verifier characteristics. EvoMo also relies on external feedback signals, such as generated tests or reward estimates, whose quality can affect search efficiency and final accuracy. Finally, although the method is training-free, it spends additional inference-time compute; future work should study adaptive budget allocation and stronger stopping criteria.
 
-\section{Ethics Statement}
-Our work focuses on advancing inference-time scaling techniques for large language models through search and strategy optimization. We emphasize that our methods are designed as general-purpose reasoning frameworks and do not involve training on, collecting, or annotating sensitive data. The evaluation benchmarks (APPS, HumanEval, MBPP+, LeetCode, and CodeContests) are all publicly available and widely adopted in the community. As such, this work does not pose foreseeable ethical risks beyond those already inherent to LLMs, such as potential misuse in generating incorrect or biased code. We encourage responsible deployment and recommend that future applications of our framework incorporate safety checks and domain-specific constraints where necessary.
-
-
-
-
-\section{Reproducibility Statement}
-
-Our work is reproducible. The experiment details can be found in Appendix~\ref{experiment111}. All hyperparameters, search budgets, and evaluation setups are documented in detail in Appendix~\ref{experiment111}. We strictly follow standard benchmarks (APPS, HumanEval, MBPP+, LeetCode, and CodeContests), with clear descriptions of dataset splits and validation protocols. For coding experiments, we use a fixed number of generated solutions and uniformly 6 hidden validation tests per problem to ensure fair comparison. We also provide ablations across compute budgets and model backbones to validate robustness. Together, these practices ensure that our reported results can be independently verified.
-
-
 % \newpage
-
-
-
 
 \bibliography{emnlp2026}
 
@@ -1817,6 +1803,14 @@ All research ideas, algorithmic designs, experiments, datasets, analyses, and co
 were conceived and validated by the authors.
 LLMs were \textbf{not} used to produce results, annotations/ground truth, or methodological decisions.
 The authors take full responsibility for the content of this paper.
+
+
+\section{Ethics Statement}
+Our work focuses on advancing inference-time scaling techniques for large language models through search and strategy optimization. We emphasize that our methods are designed as general-purpose reasoning frameworks and do not involve training on, collecting, or annotating sensitive data. The evaluation benchmarks (APPS, HumanEval, MBPP+, LeetCode, and CodeContests) are all publicly available and widely adopted in the community. As such, this work does not pose foreseeable ethical risks beyond those already inherent to LLMs, such as potential misuse in generating incorrect or biased code. We encourage responsible deployment and recommend that future applications of our framework incorporate safety checks and domain-specific constraints where necessary.
+
+
+\section{Reproducibility Statement}
+Our work is reproducible. The experiment details can be found in Appendix~\ref{experiment111}. All hyperparameters, search budgets, and evaluation setups are documented in detail in Appendix~\ref{experiment111}. We strictly follow standard benchmarks (APPS, HumanEval, MBPP+, LeetCode, and CodeContests), with clear descriptions of dataset splits and validation protocols. For coding experiments, we use a fixed number of generated solutions and uniformly 6 hidden validation tests per problem to ensure fair comparison. We also provide ablations across compute budgets and model backbones to validate robustness. Together, these practices ensure that our reported results can be independently verified.
 
 
 \end{document}
