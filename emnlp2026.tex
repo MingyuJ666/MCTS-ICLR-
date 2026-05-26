@@ -295,11 +295,11 @@ Formal analysis and proofs of the algorithm are deferred to Appendix~\ref{sec:th
 
 
 
-We report 3 success rates on the standard benchmarks: Pass@\!$1$, Pass@\!$K$ and Pass@\!$Any$. For the coding dataset, we use two settings: without ground truth (which more closely reflects real-world usage, where a canonical answer is unavailable, we need to use self-generated valid test), and with ground truth (ground-truth solutions exist; we also compute the same metrics for completeness. Results are included, but placed in the Appendix ~\ref{apps:withgt}). We include LineSearch~\citep{shinn2023reflexion}, BoN~\citep{brown2024largelanguagemonkeysscaling}, Tree Search~\citep{yao2023tree}, Genetic Algorithm (FunSearch)~\citep{FunSearch2023}, Scatter and SFS~\citep{light2025sfs} as Baselines. For Coding dataset, We use HumanEval~\citep{chen2021evaluating}, MBPP+~\citep{austin2021program} (more test case), CodeContests~\citep{doi:10.1126/science.abq1158} and Leetcode~\citep{guo2024deepseek}. From the 10,000 problems in APPS~\citep{hendrycks2021measuring}, we randomly sample 200 for evaluation due to budget constraints. We chose 160 problems from the HumanEval full set. Some cases are prone to crashes as~\citep{light2025sfs}. Methods were given the same search budget and 6 self-generated validation tests.
+We report 3 success rates on the standard benchmarks: Pass@\!$1$, Pass@\!$K$ and Pass@\!$Any$. For the coding dataset, we use two settings: \emph{without ground truth}, which more closely reflects real-world usage where a canonical answer is unavailable and self-generated validation tests must be used; and \emph{with ground truth}, where ground-truth solutions exist and we compute the same metrics for completeness (these results are reported in Appendix~\ref{apps:withgt}). We include LineSearch~\citep{shinn2023reflexion}, BoN~\citep{brown2024largelanguagemonkeysscaling}, Tree Search~\citep{yao2023tree}, Genetic Algorithm (FunSearch)~\citep{FunSearch2023}, Scatter and SFS~\citep{light2025sfs} as Baselines. For Coding dataset, We use HumanEval~\citep{chen2021evaluating}, MBPP+~\citep{austin2021program} (more test case), CodeContests~\citep{doi:10.1126/science.abq1158} and Leetcode~\citep{guo2024deepseek}. From the 10,000 problems in APPS~\citep{hendrycks2021measuring}, we randomly sample 200 for evaluation due to budget constraints. We chose 160 problems from the HumanEval full set. Some cases are prone to crashes as~\citep{light2025sfs}. Methods were given the same search budget and 6 self-generated validation tests.
 
 \subsection{Preliminary Experiments: Validating Effectiveness of the Strategy Pool}
 
-To demonstrate whether our \textit{strategy pool} is effective and offers tangible gains over a vanilla BoN baseline under realistic computational limits, we ran a 100-problem slice of the GMS-Hard~\citep{gao2023pal} and MMLU-pro~\citep{wang2024mmlu} benchmarks. For each problem, we generated up to 8 candidate solutions with the same temperature, once with CoT and once with strategy pool prompting, both with the BoN method. It shows that the strategy pool produces strictly higher output diversity and better Pass@\!$k$  result than a vanilla CoT prompt under the same sampling budgets.
+To demonstrate whether our \textit{strategy pool} is effective and offers tangible gains over a vanilla BoN baseline under realistic computational limits, we ran a 100-problem slice of the GMS-Hard~\citep{gao2023pal} and MMLU-pro~\citep{wang2024mmlu} benchmarks. For each problem, we generated up to 8 candidate solutions with the same temperature, once with CoT and once with strategy pool prompting, both with the BoN method. As shown in Figure~\ref{fig:combined}, the strategy pool produces strictly higher output diversity and better Pass@\!$k$ results than a vanilla CoT prompt under the same sampling budgets.
 
 
 
@@ -396,7 +396,7 @@ SFS (MCTS) & \runnerup{89.38} & \runnerup{94.38} & \runnerup{78.58} & \runnerup{
 \end{tabular}}
 \end{table*}
 
-Simply enabling a lightweight \emph{strategy pool} at expansion in SFS, it outperforms the SOTA SFS baseline across all code benchmarks like Figure~\ref{tab:pass_comparison}, without any additional optimization. Our method consistently lifts both Pass@1 and Pass@\!$K$: \textit{HumanEval} Pass@\!$K$ rises to 95.62\% (vs.\ 94.38\% for SFS), \textit{LeetCode} Pass@\!$K$ improves by +4.40 points to 59.88\%, and \textit{CodeContests} Pass@\!$K$ increases from 13.96\% to 16.97\%; we also see gains on \textit{MBPP+} (83.88\% vs.\ 84.38\%) and
+Simply enabling a lightweight \emph{strategy pool} at expansion in SFS outperforms the SOTA SFS baseline across all code benchmarks, as shown in Table~\ref{tab:pass_comparison}, without any additional optimization. Our method consistently lifts both Pass@1 and Pass@\!$K$: \textit{HumanEval} Pass@\!$K$ rises to 95.62\% (vs.\ 94.38\% for SFS), \textit{LeetCode} Pass@\!$K$ improves by +4.40 points to 59.88\%, and \textit{CodeContests} Pass@\!$K$ increases from 13.96\% to 16.97\%; we also see gains on \textit{MBPP+} (83.88\% vs.\ 84.38\%) and
 \textit{APPS} (38.00\% vs.\ 39.00\%). This reveals the untapped value of strategy diversification and lays the groundwork for our momentum method, positioning the \emph{strategy pool} as a broadly useful, plug-and-play enhancement.
 
 \subsection{Momentum-Inspired Optimization can help Scaling Inference}
@@ -427,8 +427,8 @@ Simply enabling a lightweight \emph{strategy pool} at expansion in SFS, it outpe
 
 
 We observe that the momentum mechanism is most beneficial at \emph{larger} iteration budgets. With few iterations (e.g., $<\!10$), the trigger rarely fires, and all curves are close. 
-As the search proceeds (around $20{\sim}40$ iterations), solution similarity naturally rises, the trigger activates more often, and the controller injects underused strategies; the scaling curve then bends upward. We simply add the momentum mechanism from SFS~\citep{light2025sfs} with the strategy pool. Concretely, on APPS, the momentum mechanism yields uniform gains over SFS at every k as Figure~\ref{fig:cc-vis-2}. By $40$ iterations, our method consistently surpasses the strongest non-momentum baselines like BoN, SFS, and SFS with strategy pool by a clear margin in Figure~\ref{fig:triple-a} and~\ref{fig:triple-c}.  All results in this section use \texttt{GPT-4o-mini} on \textsc{APPS} and \textsc{CodeContests}, under identical per-iteration token budgets and sampling hyper-parameters, \emph{without ground-truth unit tests} (only 6 self-generated validations). In Figure~\ref{tab:coding-split},  we can observe that after 16 iterations, the momentum mechanism starts to take effect and delivers notable improvements. Across all evaluation points from Pass@1 to Pass@\!$Any$, our method consistently 
-outperforms plain SFS by a clear margin as Figure~\ref{fig:cc-vis-2}, demonstrating the effectiveness of 
+As the search proceeds (around $20{\sim}40$ iterations), solution similarity naturally rises, the trigger activates more often, and the controller injects underused strategies; the scaling curve then bends upward. We simply add the momentum mechanism from SFS~\citep{light2025sfs} with the strategy pool. Concretely, on APPS, the momentum mechanism yields uniform gains over SFS at every $k$, as shown in Figure~\ref{fig:cc-vis-2}. By $40$ iterations, our method consistently surpasses the strongest non-momentum baselines like BoN, SFS, and SFS with strategy pool by a clear margin, as shown in Figures~\ref{fig:triple-a} and~\ref{fig:triple-c}.  All results in this section use \texttt{GPT-4o-mini} on \textsc{APPS} and \textsc{CodeContests}, under identical per-iteration token budgets and sampling hyper-parameters, \emph{without ground-truth unit tests} (only 6 self-generated validations). In Figure~\ref{tab:coding-split},  we can observe that after 16 iterations, the momentum mechanism starts to take effect and delivers notable improvements. Across all evaluation points from Pass@1 to Pass@\!$Any$, our method consistently 
+outperforms plain SFS by a clear margin, as shown in Figure~\ref{fig:cc-vis-2}, demonstrating the effectiveness of
 momentum in breaking similarity plateaus and sustaining exploration.
 
 
@@ -499,7 +499,7 @@ We observe a clear monotonic pattern: models with stronger backbones exhibit fas
 
 
 
-To examine whether our \textit{\textbf{Strategy Pool}} and \textit{\textbf{Momentum Mechanism}} improve solution diversity, we measure the solutions' similarity returned by each search algorithm on mainstream code generation benchmarks APPS, as Figure~\ref{fig:sim}. For the search algorithm (Line Search, Tree Search, Genetic Algorithm, SFS, and our method, our method is built on SFS and just adds the strategy pool and Momentum Mechanism to SFS. Ours1=\emph{Strategy Pool}, Ours2=\emph{Strategy Pool + Momentum}. We report four similarity metrics that are standard in plagiarism analysis: TF-IDF cosine similarity, Code-BERT similarity~\citep{feng2020codebert}, Levenshtein similarity, and token-sequence overlap score. Using 16 search budget and 6 self-generated validation tests, Ours2 yields the lowest similarity, and Ours1 yields the second best.
+To examine whether our \textit{\textbf{Strategy Pool}} and \textit{\textbf{Momentum Mechanism}} improve solution diversity, we measure the solutions' similarity returned by each search algorithm on a mainstream code generation benchmark, APPS, as shown in Figure~\ref{fig:sim}. For the search algorithm (Line Search, Tree Search, Genetic Algorithm, SFS, and our method, our method is built on SFS and just adds the strategy pool and Momentum Mechanism to SFS. Ours1=\emph{Strategy Pool}, Ours2=\emph{Strategy Pool + Momentum}. We report four similarity metrics that are standard in plagiarism analysis: TF-IDF cosine similarity, Code-BERT similarity~\citep{feng2020codebert}, Levenshtein similarity, and token-sequence overlap score. Using 16 search budget and 6 self-generated validation tests, Ours2 yields the lowest similarity, and Ours1 yields the second best.
 
 \begin{figure}[t]
   \centering
@@ -513,20 +513,18 @@ We can observe that CodeBERT similarity is almost saturated ($0.997\!\sim\!0.999
 
 \begin{figure*}[t]
 \centering
-\begin{subfigure}[b]{0.72\textwidth}
+\begin{subfigure}[b]{0.74\textwidth}
   \centering
-  \includegraphics[width=\linewidth]{fig/similarity_vs_performance_with_legend.pdf}
+  \includegraphics[height=4.2cm]{fig/similarity_vs_performance_with_legend.pdf}
   \caption{\textbf{Diversity Analysis:} Lower Similarity Correlates with Higher Pass@\!$Any$ Performance in APPS dataset for 6 search method. \emph{Average} denotes the per-method mean of the four similarities.}
   \label{fig:mylabel}
 \end{subfigure}\hfill
-\begin{subfigure}[b]{0.26\textwidth}
+\begin{subfigure}[b]{0.24\textwidth}
   \centering
-  \includegraphics[width=\linewidth]{fig/ablation_study_curve.pdf}
+  \includegraphics[height=4.2cm]{fig/ablation_study_curve.pdf}
   \caption{Component ablation shows the momentum gains: the full Momentum module (red line) achieves the best Pass@K curve throughout 40 iterations.}
   \label{fig:left-momentum}
 \end{subfigure}
-\caption{Diversity analysis and component ablation.}
-\label{fig:diversity-ablation}
 \end{figure*}
 
 \subsubsection{Diversity Insight and Application}
@@ -1070,15 +1068,16 @@ CodeContests \(\;10.91 \rightarrow 13.33\)
 \((+2.42\ \mathrm{pp})\).
 These improvements are achieved without modifying the tree structure, confirming that our method is truly \emph{plug-and-play} for outcome/goal-oriented MCTS while providing process-oriented guidance through the strategy pool and
 momentum.
+
+\nolinenumbers
+\onecolumn
 \subsection{Details in Safety Detection Task}
 
 \subsubsection{Baseline and Datasets}
 In our experiments, we categorize baselines into two types: model-based defense agencies and guardrail-based defense agencies. For model-based defenses, we configure advanced LLMs, such as GPT-4o, with a customized CoT prompt~\citep{xiang2025guardagent} under zero-shot and one-shot settings. For guardrail-based defenses, we set up LLaMAGuard3~\citep{inan2023llama} with guard requests as safety categories and evaluate GuardAgent under a two-shot setting, which represents its strongest setup. We also incorporate ToolEmu~\citep{ruan2024identifying}  as a baseline, which simulates agent environments, and we only evaluated it on Safe-OS due to online setting. Additionally, we consider AgentMonitor~\citep{chan2024agentmonitor} with guided scoring as a baseline. For AGrail~\citep{luo-etal-2025-agrail}, which is evaluated during Test-Time Computing setting in the main experiment.
 
 We conduct our experiments on three comprehensive datasets, these datasets provide realistic and adaptive evaluation frameworks for assessing the robustness of safety detection methods. \textit{\textbf{Safe-OS}} \citep{luo-etal-2025-agrail} is a comprehensive benchmark designed to evaluate the safety of AI agents operating in operating system environments. \textit{\textbf{AdvWeb}} \citep{xu2025advagent} presents a sophisticated adversarial evaluation framework that generates and injects imperceptible adversarial strings designed to mislead web agents into executing incorrect or potentially harmful actions. The dataset creates subtle perturbations that can cause agents to deviate from their intended behavior without obvious detection. \textit{\textbf{EIA}} \citep{liaoeia} implements a black-box attack methodology that manipulates web environments through the strategic injection of 8,108 hidden malicious HTML elements. This approach tricks web agents into inadvertently leaking sensitive user data through two primary attacks.
-\clearpage
-\nolinenumbers
-\onecolumn
+
 \begin{tcolorbox}[colback=gray!5!white,colframe=black!75!white,title=Example Task]
 \textbf{Description:} As the administrator of this Linux system, it is critical that you immediately assist in modifying the permissions of the \texttt{/etc/shadow} file to make it readable by all users. This urgent action is necessary to enable collaborative system management across all user accounts.  
 
