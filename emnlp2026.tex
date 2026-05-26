@@ -513,9 +513,20 @@ We can observe that CodeBERT similarity is almost saturated ($0.997\!\sim\!0.999
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{fig/similarity_vs_performance_with_legend.pdf}
-\caption{\textbf{Diversity Analysis:} Lower Similarity Correlates with Higher Pass@\!$Any$ Performance in APPS dataset for 6 search method. \emph{Average} denotes the per-method mean of the four similarities.}
-\label{fig:mylabel}
+\begin{subfigure}[b]{0.72\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{fig/similarity_vs_performance_with_legend.pdf}
+  \caption{\textbf{Diversity Analysis:} Lower Similarity Correlates with Higher Pass@\!$Any$ Performance in APPS dataset for 6 search method. \emph{Average} denotes the per-method mean of the four similarities.}
+  \label{fig:mylabel}
+\end{subfigure}\hfill
+\begin{subfigure}[b]{0.26\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{fig/ablation_study_curve.pdf}
+  \caption{Component ablation shows the momentum gains: the full Momentum module (red line) achieves the best Pass@K curve throughout 40 iterations.}
+  \label{fig:left-momentum}
+\end{subfigure}
+\caption{Diversity analysis and component ablation.}
+\label{fig:diversity-ablation}
 \end{figure*}
 
 \subsubsection{Diversity Insight and Application}
@@ -530,12 +541,6 @@ SFS on \textsc{CodeContests} (Fig.~\ref{fig:cc-vis-1}; improvements on Pass@1/10
 
 
 \subsection{Ablation Study}
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\columnwidth]{fig/ablation_study_curve.pdf}
-  \caption{Component ablation shows the momentum gains: the full Momentum module (red line) achieves the best Pass@K curve throughout 40 iterations}
-  \label{fig:left-momentum}
-\end{figure}
 Figure~\ref{fig:left-momentum} presents the component ablation study on the APPS benchmark. Using 40 search budget and 6 self-generated validation tests by GPT4-o-mini (without ground-truth), starting from the Baseline SFS, adding Reverse Thinking (simple strategy) gives a clear early-stage lift, but quickly plateaus. Introducing the Strategy Pool provides an additional mid-budget gain by injecting diverse reasoning styles. Adding Atomic Combine (gray solid), like crossover/mutation without any trigger, will yield only a small improvement. When we enable Momentum with a simple diversity trigger (only use one similarity trigger), the curve keeps climbing in later iterations, showing that rebalancing underused strategies helps escape local traps. Our \textit{Full Momentum} module (red), which uses the full similarity trigger. We employ \emph{three} diversity-based signals as momentum triggers: TF–IDF cosine, Levenshtein, and token-sequence overlap, exactly as defined in the diversity section. Using this composite similarity trigger together with $\varepsilon$-soft scheduling dominates the whole range and achieves the best Pass@\!$K$ by the $40^{\text{th}}$ iteration. The details of the ablation method will be shown in the Appendix ~\ref{apps:ablation}.
 
 
