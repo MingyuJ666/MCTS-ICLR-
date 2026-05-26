@@ -102,8 +102,12 @@ Fix $\varepsilon\in(0,1)$. Assume:
 (iii) each triggered evolve attempt \emph{succeeds} with probability at least $p(\varepsilon)>0$ (Assumption~\ref{ass:succ});
 (iv) the local transfer constant $\beta(\varepsilon)>0$ holds. Then, with probability $1$, there exists a finite (random) time $T_\varepsilon$ such that $\mathcal A_{T_\varepsilon}$ is $\varepsilon$-terminal, i.e., $w_{T_\varepsilon}(\varepsilon)=0$. Moreover,
 \[
-\mathbb E[\#\text{ successes to reach }w(\varepsilon)=0]\le \left\lceil \frac{w_0(\varepsilon)}{\beta(\varepsilon)}\right\rceil,\qquad
-\mathbb E[T_\varepsilon]\ \le\ \frac{1}{q(\varepsilon)\,p(\varepsilon)\,\beta(\varepsilon)}.
+\begin{aligned}
+\mathbb E[\#\text{ successes}]
+&\le \left\lceil \frac{w_0(\varepsilon)}{\beta(\varepsilon)}\right\rceil,\\
+\mathbb E[T_\varepsilon]
+&\le \frac{1}{q(\varepsilon)\,p(\varepsilon)\,\beta(\varepsilon)}.
+\end{aligned}
 \]
 \end{theorem}
 
@@ -116,4 +120,3 @@ Each success removes at least $\beta(\varepsilon)$ mass from $w_t(\varepsilon)$ 
 (i) Theorem~\ref{thm:eventual-discovery} formalizes the intuition that UCT’s in-pool consistency makes stagnation \emph{detectable} via high inner-product similarity, guaranteeing eventual triggering and improvement when a true gap persists.
 (ii) Theorem~\ref{thm:terminality} avoids topological detours: it proves $\varepsilon$-terminality by showing that each successful discovery removes a \emph{fixed measure} of $\varepsilon$-hard states, so only finitely many are needed to eliminate all mass almost surely.
 (iii) No $\varepsilon$-soft action selection is required for the statements; if present with a decaying GLIE schedule, it can only increase trigger frequency (absorbed into a larger $q(\varepsilon)$).
-

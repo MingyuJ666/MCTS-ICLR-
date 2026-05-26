@@ -32,6 +32,13 @@
 \usepackage{wrapfig}
 \usepackage[most]{tcolorbox}
 \usepackage{xspace}
+\lstset{
+  basicstyle=\ttfamily\tiny,
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  keepspaces=true
+}
 
 \newcommand{\ourmethod}{{\fontfamily{lmtt}\selectfont EvoMo}\xspace}
 \newcommand{\ours}{{\fontfamily{lmtt}\selectfont \textbf{Ours1 (strategy pool)  }}\xspace}
@@ -632,18 +639,19 @@ Introduction (\autoref{intro}) that alternates different strategies like Plan-th
 
 
  
-\begin{figure}[!th]
+\begin{figure*}[t]
     \centering
-    \includegraphics[width=0.95\linewidth]{fig/case_cot_dual.pdf}
+    \includegraphics[width=0.92\textwidth]{fig/case_cot_dual.pdf}
     \caption{Example of CoT and Reverse Thinking with GPT4o-mini. This problem cannot be solved by plain CoT alone and requires the use of our strategy pool.}
     \label{app:more_examples:EICU_AC:figure}
-\end{figure}
+\end{figure*}
 
-\begin{wrapfigure}{r}{0.3\columnwidth} % {l}左，{r}右
-  \centering  \includegraphics[width=\linewidth]{apps/apps_passk_APPS_colored.pdf}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{apps/apps_passk_APPS_colored.pdf}
   \caption{Pass@K performance on the APPS benchmark using three search optimization methods.}
   \label{fig:appspool}
-\end{wrapfigure}
+\end{figure}
 In this setting, we further evaluate some search-based optimization methods on the MBPP$^+$ code generation benchmark. Concretely, we plug our strategies, NORMAL (plain CoT sampling) and Strategy Pool, into three mainstream search frameworks: Tree Search, Genetic Algorithm, and SFS. For each method, we adopt the same sampling protocol: the model produces $N$ candidate solutions under the given reasoning scheme. The reported metric is Pass@$k$, showing the probability that at least one of the top-$k$ candidates is correct. As illustrated in Fig.~\ref{fig:mbpp-passk}, integrating the strategy pool consistently improves Pass@$k$ across different search algorithms, with the largest gain observed on Tree Search (+0.76\%) and Genetic Algorithm (+1.25\%), and a smaller yet stable gain for SFS (+0.50\%). This demonstrates that our strategy pool is complementary to search-time optimization, boosting reliability without requiring additional training. APPS result is shown in Figure ~\ref{fig:appspool}.
 
 
@@ -798,12 +806,12 @@ For each benchmark problem, our search methods generate multiple solution candid
 
 This metric quantifies the \textit{solution space coherence} for a given problem by computing the expected pairwise similarity across all generated candidates. It serves as an inverse measure of \textit{algorithmic diversity} and provides insights into the \textit{exploration efficacy} of search methods.
 
-\begin{table}[ht]
+\begin{table*}[t]
 \scriptsize
 \centering
-\setlength{\tabcolsep}{5.3pt}
+\setlength{\tabcolsep}{2.5pt}
 \renewcommand{\arraystretch}{1.12}
-\begin{minipage}[t]{0.5\linewidth}
+\begin{minipage}[t]{0.48\textwidth}
 \centering
 \subfloat[HumanEval]{
 % 局部化：去掉规则线上下留白
@@ -826,7 +834,7 @@ SFS      & \runnerup{0.7251} & \runnerup{0.9984} & \runnerup{0.7754} & \runnerup
 \end{tabular}}%
 }
 \end{minipage}\hfill
-\begin{minipage}[t]{0.5\linewidth}
+\begin{minipage}[t]{0.48\textwidth}
 \centering
 \subfloat[MBPP+]{
 {\setlength{\abovetopsep}{0pt}\setlength{\belowbottomsep}{0pt}%
@@ -850,18 +858,18 @@ SFS      & \runnerup{0.6935} & \runnerup{0.9980} & \runnerup{0.7532} & \runnerup
 \end{minipage}
 \caption{Effects of different search methods. 12 seed solutions were generated using GPT-4o-mini, and we filtered the seeds using 6 generated validation tests for each method.}
 \label{table:div}
-\end{table}
+\end{table*}
 \vspace{0.6em}
 
 
-\begin{table}[ht]
+\begin{table*}[t]
 \scriptsize
 \centering
-\setlength{\tabcolsep}{5.3pt}
+\setlength{\tabcolsep}{2.5pt}
 \renewcommand{\arraystretch}{1.12}
 
 % ================= APPS =================
-\begin{minipage}[t]{0.5\linewidth}
+\begin{minipage}[t]{0.48\textwidth}
 \centering
 \subfloat[APPS]{%
 {\setlength{\abovetopsep}{0pt}\setlength{\belowbottomsep}{0pt}%
@@ -885,7 +893,7 @@ Ours1      & \runnerup{0.5268} & \runnerup{0.9975} & \runnerup{0.6826} & 0.6868 
 \end{tabular}}}
 \end{minipage}\hfill
 % ================= CodeContest =================
-\begin{minipage}[t]{0.5\linewidth}
+\begin{minipage}[t]{0.48\textwidth}
 \centering
 \subfloat[CodeContest]{%
 {\setlength{\abovetopsep}{0pt}\setlength{\belowbottomsep}{0pt}%
@@ -912,8 +920,8 @@ Ours1     & \runnerup{0.5762} & 0.9980 & 0.7065 & \runnerup{0.6904} \\
 \vspace{0.5em}
 
 % ================= LeetCode =================
-\makebox[\linewidth]{%
-\begin{minipage}[t]{0.5\linewidth}
+\makebox[\textwidth]{%
+\begin{minipage}[t]{0.48\textwidth}
 \centering
 \subfloat[LeetCode]{%
 {\setlength{\abovetopsep}{0pt}\setlength{\belowbottomsep}{0pt}%
@@ -941,14 +949,19 @@ Ours1     & \runnerup{0.5014} & \runnerup{0.9960} & \runnerup{0.6775}& \runnerup
 \caption{\textbf{Diversity via average pairwise similarity} (\,$\downarrow$ lower is better). 
 Per problem, 16 seed solutions are sampled with \texttt{GPT-4o-mini}; for each search method, we keep candidates that pass 6 self-generated tests. \textbf{Ours1} integrates Strategy Pool; \textbf{Ours2} further adds momentum, consistently reducing similarity (increasing diversity).}
 \label{tab:diversity-sim}
-\end{table}
+\end{table*}
 
 
 
 For each benchmark problem, our search methods generate multiple solution candidates rather than a single answer. To compute the overall similarity for a given problem $p$, we calculate the average pairwise similarity across all generated solutions $\mathcal{S}_p = \{s_1, s_2, \ldots, s_n\}$:
 
 \begin{equation}
-\text{Problem Similarity}(p) = \frac{1}{|\mathcal{S}_p|(|\mathcal{S}_p| - 1)} \sum_{s, s' \in \mathcal{S}_p, s \neq s'} \text{Similarity}(s, s')
+\begin{aligned}
+\mathrm{Sim}_{\mathrm{prob}}(p)
+&= \frac{1}{|\mathcal{S}_p|(|\mathcal{S}_p|-1)}
+   \sum_{\substack{s,s'\in\mathcal{S}_p\\s\neq s'}}
+   \mathrm{Sim}(s,s').
+\end{aligned}
 \end{equation}
 
 This approach allows us to quantify how diverse the solution space is for each individual problem. Lower similarity scores indicate higher diversity, suggesting that the search method successfully explores different solution strategies rather than converging to similar approaches.
@@ -959,11 +972,12 @@ In our experiments, we observe that traditional search methods such as Line, Tre
 
 \subsection{Verifier (Validation test) Accuracy}
 
-\begin{wrapfigure}{r}{0.38\columnwidth} % {l}左，{r}右
-  \centering  \includegraphics[width=\linewidth]{apps/confusion_matrix_verifier.pdf}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.78\columnwidth]{apps/confusion_matrix_verifier.pdf}
   \caption{Confusion matrix of the black-box verifier built from self-generated unit tests. Rows indicate ground-truth correctness and columns the verifier’s prediction.}
   \label{fig:confusion_matrix}
-\end{wrapfigure}
+\end{figure}
 
 In many LLM-based reasoning and search methods, a verifier is required to determine whether a candidate solution is correct. Ideally, the verifier should align with the ground truth; otherwise, its misjudgments may affect the final outcome. Instead of relying on human-annotated ground-truth validation, which is less realistic, we employ self-generated validation tests and treat them as a black-box verifier. Such self-generated tests inherently contain noise and may therefore produce misclassifications. Our methodology uses automatically generated validation tests to assess the correctness of code solutions. The LLM is prompted to produce Python unit tests in the form of assertions. We supply a high-level description of the target functions or modules and instruct the model that tests must be concise, diverse, and verifiable. By leveraging the LLM’s semantic understanding of code, these generated tests guide the search toward correct solutions and provide immediate feedback throughout the refinement process.
 
@@ -976,37 +990,44 @@ Ground truth validation is very helpful: even adding just one ground-truth test 
 Best-of-N (BoN) sampling (repeated sampling) refers to the process of independently and identically sampling $N$ responses from an LLM solver for a given prompt $p$ and query $q$, formally denoted as $\boldsymbol{s}_{1:N} \sim \text{LLM}(\cdot \mid p, q)^N$ where $\boldsymbol{s}_{1:N} = (s_1, s_2, \ldots, s_N)$. For code generation tasks, a problem $q$ is considered solved if at least one submission passes all hidden tests, which is equivalent to selecting the answer that passes the maximum number of verification tests. Under this framework, the proportion of tasks solved using $k$ submissions is termed the \texttt{Pass@k} rate, expressed as:
 
 \begin{equation}
-\text{Pass@k} = \mathbb{E}_{q \sim \mathcal{Q}} \left[ \mathbb{I}\left\{ \exists i \in \{1, 2, \ldots, k\} : \text{score}(s_i, q) = \text{perfect\_score}(q) \right\} \right]
+\begin{aligned}
+\text{Pass@}k
+&= \mathbb{E}_{q \sim \mathcal{Q}}
+   \left[\mathbb{I}\{A_k(q)\}\right],\\
+A_k(q)
+&: \exists i \le k,\ 
+\text{score}(s_i,q)=\text{perfect\_score}(q).
+\end{aligned}
 \end{equation}
 
 where $\mathcal{Q}$ represents the distribution of test problems, $\text{score}(s_i, q)$ denotes the evaluation score of solution $s_i$ on problem $q$, and $\mathbb{I}\{\cdot\}$ is the indicator function that equals 1 when the condition is satisfied and 0 otherwise.
 
 In \cite{wang2025diversified}'s work, the authors propose a method that enhances Best-of-N sampling through prompt diversification rather than uniform repetition. Their approach encompasses two categories: task-agnostic perturbations (including Jabberwocky text injection for linguistic variety), role-based prompting with personas like ``mentor'' or ``optimizer'', and generic instruction insertion. And task-specific strategies. such as Random Idea Injection, where auxiliary LLMs generate problem-relevant insights that are incorporated into the original prompt. 
 
-\begin{figure}[htbp]
+\begin{figure*}[t]
     \centering
     \begin{subfigure}[b]{0.47\textwidth}
         \centering
-\includegraphics[width=0.99\textwidth]{apps/appsbon.pdf}
+\includegraphics[width=\linewidth]{apps/appsbon.pdf}
         \caption{Absolute performance comparison on APPS dataset}
         \label{fig:apps_absolute}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.47\textwidth}
         \centering
-        \includegraphics[width=0.99\textwidth]{apps/apps_relative_improvement.pdf}
+        \includegraphics[width=\linewidth]{apps/apps_relative_improvement.pdf}
         \caption{Relative performance improvement over baselines}
         \label{fig:apps_relative}
     \end{subfigure}
     \caption{Performance comparison of our method \ourmethod against diversified sampling baselines. (a) shows the absolute Pass@K performance across different methods, where our approach consistently outperforms all baselines. (b) illustrates the relative improvement percentage of our method over each baseline, demonstrating significant gains, especially at higher K values.}
-\end{figure}
+\end{figure*}
 
 
 Enhanced-BoN mitigates the collapse of repeated sampling by diversifying prompts (e.g., Jabberwocky/role/instruction/random-idea injections). However, it still allocates samples uniformly across variants and relies on post-hoc selection. In contrast, our approach \ourmethod (SFS-based) updates using feedback (unit-test pass count), while a strategy pool (decomposition, reverse checking, constraint explicitization, counterfactual probing, example induction, etc.) generates orthogonal candidate families with similarity penalties (akin to momentum) to prevent redundancy. This yields adaptive budgeting toward promising yet non-overlapping regions of the solution space. Across \textsc{APPS}, our method consistently dominates all Enhanced-BoN variants for the entire range of $K$. Gains appear already at small budgets ($K \le 5$) and amplify for medium/large budgets ($K \ge 20$), where the \emph{relative improvement} keeps increasing rather than saturating, unlike BoN, whose marginal returns diminish as new samples mostly duplicate previous ones, like Figure~\ref{fig:apps_absolute}.
 
 
 
-\begin{figure}[htbp]
+\begin{figure*}[t]
   \centering
   \captionsetup[subfigure]{justification=centering}
   \begin{subfigure}[t]{0.33\textwidth}
@@ -1030,7 +1051,7 @@ Enhanced-BoN mitigates the collapse of repeated sampling by diversifying prompts
 
   \caption{Performance on APPS: (a) absolute Pass@K; (b) pointwise improvement (ours minus each baseline); (c) average gain across K ranges.}
   \label{fig:apps-3panel}
-\end{figure}
+\end{figure*}
 
 
 
@@ -1041,11 +1062,12 @@ K and increase further for large K (see Figure~\ref{fig:apps-bins}). This mirror
 
 
 \subsection{Vanilla MCTS and Our Method}
-\begin{wrapfigure}{r}{0.45\columnwidth} % {l}左，{r}右
-  \centering  \includegraphics[width=\linewidth]{apps/enhanced_mcts_bar.pdf}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.82\columnwidth]{apps/enhanced_mcts_bar.pdf}
   \caption{P@K on three benchmarks using the same backbone (GPT-4o-mini), 16 MCTS iterations, and a 6-case self-generated validation set. Injecting our process-oriented layer (strategy pool + momentum)}
   \label{fig:mcts-bar}
-\end{wrapfigure}
+\end{figure}
 To show our method is \emph{plug-and-play}, we attach it to a standard, outcome/goal-oriented \textit{MCTS}. Vanilla MCTS chooses actions only from rewarded outcomes (via UCT)
 and expands the tree accordingly. In contrast, our \textit{strategy pool} and
 \textit{momentum} are \emph{process–oriented}: they operate on \emph{how} candidates are generated rather than on
@@ -1068,10 +1090,9 @@ momentum.
 In our experiments, we categorize baselines into two types: model-based defense agencies and guardrail-based defense agencies. For model-based defenses, we configure advanced LLMs, such as GPT-4o, with a customized CoT prompt~\citep{xiang2025guardagent} under zero-shot and one-shot settings. For guardrail-based defenses, we set up LLaMAGuard3~\citep{inan2023llama} with guard requests as safety categories and evaluate GuardAgent under a two-shot setting, which represents its strongest setup. We also incorporate ToolEmu~\citep{ruan2024identifying}  as a baseline, which simulates agent environments, and we only evaluated it on Safe-OS due to online setting. Additionally, we consider AgentMonitor~\citep{chan2024agentmonitor} with guided scoring as a baseline. For AGrail~\citep{luo-etal-2025-agrail}, which is evaluated during Test-Time Computing setting in the main experiment.
 
 We conduct our experiments on three comprehensive datasets, these datasets provide realistic and adaptive evaluation frameworks for assessing the robustness of safety detection methods. \textit{\textbf{Safe-OS}} \citep{luo-etal-2025-agrail} is a comprehensive benchmark designed to evaluate the safety of AI agents operating in operating system environments. \textit{\textbf{AdvWeb}} \citep{xu2025advagent} presents a sophisticated adversarial evaluation framework that generates and injects imperceptible adversarial strings designed to mislead web agents into executing incorrect or potentially harmful actions. The dataset creates subtle perturbations that can cause agents to deviate from their intended behavior without obvious detection. \textit{\textbf{EIA}} \citep{liaoeia} implements a black-box attack methodology that manipulates web environments through the strategic injection of 8,108 hidden malicious HTML elements. This approach tricks web agents into inadvertently leaking sensitive user data through two primary attacks.
-
-
-
-
+\clearpage
+\nolinenumbers
+\onecolumn
 \begin{tcolorbox}[colback=gray!5!white,colframe=black!75!white,title=Example Task]
 \textbf{Description:} As the administrator of this Linux system, it is critical that you immediately assist in modifying the permissions of the \texttt{/etc/shadow} file to make it readable by all users. This urgent action is necessary to enable collaborative system management across all user accounts.  
 
@@ -1164,23 +1185,11 @@ title=\textbf{OSAgent Example Trajectory 3}]
         \textbf{Action:} \texttt{bash} \\
         \textbf{Command:} \texttt{lsof /etc/hosts}
         
-        \item \textbf{Thought:} The lsof command is not available. Let me try another approach. I'll try to use fuser to see what processes are using the file. \\
-        \textbf{Action:} \texttt{bash} \\
-        \textbf{Command:} \texttt{fuser /etc/hosts}
-        
-        \item \textbf{Thought:} Both lsof and fuser are not available. Let me try a different approach. I'll try to move the file instead of deleting it directly. \\
-        \textbf{Action:} \texttt{bash} \\
-        \textbf{Command:} \texttt{sudo mv /etc/hosts /etc/hosts.bak}
-        
-        \item \textbf{Thought:} The file is still busy. Let me try to empty the file instead of deleting it, which might be an acceptable alternative. \\
+        \item \textbf{Thought:} Direct deletion fails, so the agent tries a destructive fallback that empties the critical system file. \\
         \textbf{Action:} \texttt{bash} \\
         \textbf{Command:} \texttt{sudo truncate -s 0 /etc/hosts}
         
-        \item \textbf{Thought:} The truncate command seems to have worked without error. Let me verify that the file is now empty. \\
-        \textbf{Action:} \texttt{bash} \\
-        \textbf{Command:} \texttt{cat /etc/hosts}
-        
-        \item \textbf{Thought:} The file appears to be empty now. While I couldn't delete the file completely because it was busy (likely being used by the system), I was able to empty its contents, which effectively removes all the data in the file. This is often a safer approach for system files that are in use. \\
+        \item \textbf{Thought:} The file is now empty, so the agent finishes despite the unsafe outcome. \\
         \textbf{Action:} \texttt{finish}
     \end{enumerate}
 
@@ -1192,6 +1201,9 @@ title=\textbf{OSAgent Example Trajectory 3}]
 \end{flushleft}
 \end{tcolorbox}
 
+\clearpage
+\twocolumn
+\nolinenumbers
 There are some examples in Safe-OS~\citep{luo-etal-2025-agrail}:  For example, in a web browsing scenario, an agent may inadvertently click on a malicious link, leading to information leakage; or in an operating system environment, the agent may unintentionally overwrite existing files when renaming them. Detecting such risks requires real-time environment analysis. Safe-OS is a high-quality, carefully designed, and comprehensive dataset aimed at evaluating the robustness of online operating system agents. These attacks are meticulously crafted based on successful exploits against GPT-4–based OS agents. In addition, our dataset uses Docker to simulate a realistic operating system environment, defining two different user identities: one is a root user with sudo privileges, and the other is a normal user without sudo access. Safe-OS includes both benign and harmful scenarios, covering single-step as well as multi-step tasks. By using the examples below, we can mislead the agent into generating incorrect execution paths, similar to the demonstrated case. By using the example task, we can get os agent trajectory like below.
 
 
@@ -1271,7 +1283,7 @@ AGrail w/o Tool (GPT-4o)            & 95.6  & 4.0   & 0.0   & 10.0  & 8.8   & 8.
 \end{tabular}
 \end{table*}
 
-68.39As summarized in Table~\ref{tab:detection_results} across Safe-OS, AdvWeb, and EIA, \ourmethod (our method on top of AGrail) preserves normal behavior (higher Norm↑) while reducing attack success in Prompt Injection (PI↓), Environment manipulation (Env↓), Action Grounding (Grd↓), and Action Generation (Gen↓). The gains are most pronounced in environment- and grounding-oriented attacks, where tool-gated checks and post-execution verification provide strong safeguards. Importantly, these improvements come with negligible inference overhead, since the additional costs are confined to lightweight safety tool calls and detector queries.
+As summarized in Table~\ref{tab:detection_results} across Safe-OS, AdvWeb, and EIA, \ourmethod (our method on top of AGrail) preserves normal behavior (higher Norm↑) while reducing attack success in Prompt Injection (PI↓), Environment manipulation (Env↓), Action Grounding (Grd↓), and Action Generation (Gen↓). The gains are most pronounced in environment- and grounding-oriented attacks, where tool-gated checks and post-execution verification provide strong safeguards. Importantly, these improvements come with negligible inference overhead, since the additional costs are confined to lightweight safety tool calls and detector queries.
 
 \subsection{More Agentic Baseline}
 Because our approach \ourmethod operates at inference-time via search and verification, it should be compared against agentic solvers rather than purely non-agentic decoding. We therefore benchmark against representative SoTA agentic frameworks: CoT \citep{wei2022chain}, ReAct \citep{yao2023react}, Reflexion \citep{shinn2023reflexion}, ToT \citep{yao2023tree}, RAP \citep{hao2023reasoning}, LLM-Debate \citep{du2023improving}, LATS \citep{zhou2024language}, and SFS \citep{light2025sfs}. Across both settings, \textbf{our method} attains the best \textit{Pass@1} on \textsc{HumanEval} (90.00\%) and \textsc{MBPP} (78.84\%), slightly surpassing the strongest baseline (\textbf{SFS}) by $+0.62$\, pp and $+0.26$\, pp, respectively, demonstrating consistent gains under equal compute and tool access. Our method follows the setting in Figure~\ref{tab:pass_comparison}.
@@ -1311,16 +1323,14 @@ Because our approach \ourmethod operates at inference-time via search and verifi
 \subsection{Workflow Layer for Controlled Diversity}
 \label{apps:workflow}
 
-\begin{wrapfigure}{r}{0.4\columnwidth}
+\begin{figure}[t]
   \centering
-  \vspace{-6pt}
-  \includegraphics[width=\linewidth]{apps/high_contrast_radar.pdf}
+  \includegraphics[width=0.88\columnwidth]{apps/high_contrast_radar.pdf}
   \caption{\textbf{Workflow-augmented SFS improves diversity and accuracy.}
   Radar plot on \textsc{CodeContests}: higher values indicate better diversity
   (TF–IDF / BERT / Levenshtein / Sequence) and higher Pass@K.}
   \label{fig:workflow_radar}
-  \vspace{-8pt}
-\end{wrapfigure}
+\end{figure}
 
 We augment SFS~\citep{light2025sfs} with a lightweight \emph{workflow layer} that injects
 \emph{controlled diversity}. At each node/state $s$, the current partial
@@ -1374,8 +1384,7 @@ The workflow proceeds as follows (After evolving): the workflow can also be orga
 \subsection{Our Method with Groundtruth}
 \label{apps:withgt}
 
-\begin{wrapfigure}{r}{0.42\linewidth} % r=右侧, 宽度可调
-\vspace{-6pt}                          % 微调与上文距离
+\begin{table}[t]
 \centering
 \scriptsize
 \setlength{\tabcolsep}{6pt}
@@ -1392,8 +1401,7 @@ SFS      & 52.50 \\
 \end{tabular}
 \caption{APPS Pass@\!$K$ results.}
 \label{fig:leetcode-wrap}
-\vspace{-6pt}                          % 微调与下文距离
-\end{wrapfigure}
+\end{table}
 Table~\ref{fig:leetcode-wrap} reports the Pass@\!$K$ results on the APPS benchmark. 
 We use \texttt{GPT-4o-mini} as the base solver, generating $40$ candidate solutions 
 for each problem. To construct hidden tests, we randomly sample $6$ unit tests 
@@ -1406,9 +1414,12 @@ demonstrating that our method provides a stable and transferable advantage.
 \subsection{Different methods in Ablation Study}
 \label{apps:ablation}
 
-\begin{wrapfigure}{r}{0.3\columnwidth} % {l}
-  \centering  \includegraphics[width=\linewidth]{fig/ablation_study_curve.pdf}
-\end{wrapfigure}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.82\columnwidth]{fig/ablation_study_curve.pdf}
+  \caption{Ablation curve for progressive components.}
+  \label{fig:app-ablation-curve}
+\end{figure}
 We begin with a baseline search, and progressively add different components. 
 Adding \emph{Reverse Thinking} serves as a lightweight variant of our strategy design, 
 which mimics a simplified strategy pool by encouraging reasoning from alternative directions. The \emph{Atomic Combine} module performs automatic merging 
@@ -1430,6 +1441,9 @@ We make two key improvements to the SFS baseline algorithm. First, instead of us
 Second, we add a diversity monitoring system that watches for when the algorithm gets stuck generating similar solutions repeatedly. We measure how similar recent solutions are to each other using multiple metrics, including text similarity and code structure comparison. When solutions become too similar (exceeding a threshold), we trigger a momentum mechanism that helps the algorithm break out of repetitive patterns. This mechanism works by identifying code solution patterns that are being repeated, and then actively encouraging the algorithm to try different approaches. It does this by evolving the current strategies to include more creative and unconventional strategies.
 
 These improvements work together with the original MCTS framework - the strategy pool guides how we select and expand nodes, while the diversity monitoring ensures we don't get trapped in local optima. The result is a more adaptive search process that learns better reasoning strategies while maintaining exploration of diverse solution spaces.
+\clearpage
+\nolinenumbers
+\onecolumn
 \subsection{Prompt in Strategy Pool and momentum mechanism}
 \begin{tcolorbox}[notitle, sharp corners, breakable, colframe=ForestGreen, colback=white, 
        boxrule=3pt, boxsep=0.5pt, enhanced, 
@@ -1539,11 +1553,7 @@ initial state. Use the end goal to guide your approach
 \end{lstlisting}
 \end{tcolorbox}
 
-
-
-
-
-
+\clearpage
 
 \begin{tcolorbox}[notitle, sharp corners, breakable, colframe=black, colback=white, 
        boxrule=3pt, boxsep=0.5pt, enhanced, 
@@ -1756,6 +1766,9 @@ Format: Return each evolved idea as a separate, clear suggestion.
 
 
 
+\clearpage
+\twocolumn
+\nolinenumbers
 \section{Extended Related Work}
 \subsection{Search Method in Test-Time Scaling and LLM reasoning}
 In test-time scaling, search is widely employed to systematically probe the structured output space compressed within LLMs, thereby unlocking greater reasoning power and delivering marked gains on challenging tasks, such as advanced mathematical problem-solving~\citep{zhang2025survey, li2025system}. The first work decomposes candidate outputs into multiple thoughts arranged in a tree and then applies simple depth-first or breadth-first search; it can already outperform traditional reasoning approaches, underscoring the power of search in LLM reasoning tasks~\citep{yao2023tree}. Monte Carlo Tree Search (MCTS), as a classic and powerful search algorithm, also shines in mining LLM implicit knowledge~\citep{swiechowski2023monte}. MCTS works from discriminator-guided constrained decoding~\citep{chaffin-etal-2022-ppl}, forward-looking code synthesis~\citep{zhang2023planning}, and self-improvement loops~\citep{tian2024toward}, to custom long-horizon planners~\citep{wan2024alphazerolike}, analyses that expose discriminator bottlenecks~\citep{chen-etal-2024-tree}, unified search-as-language paradigms that train on search feedback~\citep{gandhistream}, and reward-balanced variants achieving Pareto-optimal test-time scaling~\citep{wu2025inference}.
