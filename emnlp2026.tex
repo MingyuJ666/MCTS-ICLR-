@@ -75,6 +75,16 @@
 \usepackage{booktabs,threeparttable,makecell}
 \newcommand{\bestcell}[1]{\textbf{\color{ForestGreen}{#1}}}
 \newcommand{\runnerup}[1]{\underline{#1}}
+\setlength{\textfloatsep}{6pt plus 1pt minus 2pt}
+\setlength{\floatsep}{5pt plus 1pt minus 2pt}
+\setlength{\dbltextfloatsep}{6pt plus 1pt minus 2pt}
+\setlength{\dblfloatsep}{5pt plus 1pt minus 2pt}
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpbot}{0pt plus 1fil}
+\setlength{\@dblfptop}{0pt}
+\setlength{\@dblfpbot}{0pt plus 1fil}
+\makeatother
 
 
 \title{When Evolution Meets Momentum: Orchestrating Goal-oriented and Process-oriented reasoning for LLM Inference Scaling}
@@ -494,62 +504,9 @@ We observe a clear monotonic pattern: models with stronger backbones exhibit fas
 
 
 
-\subsection{Will Strategy Pool and Momentum Mechanism Improve the Diversity}
-
-
-
-
-To examine whether our \textit{\textbf{Strategy Pool}} and \textit{\textbf{Momentum Mechanism}} improve solution diversity, we measure the solutions' similarity returned by each search algorithm on a mainstream code generation benchmark, APPS, as shown in Figure~\ref{fig:sim}. For the search algorithm (Line Search, Tree Search, Genetic Algorithm, SFS, and our method, our method is built on SFS and just adds the strategy pool and Momentum Mechanism to SFS. Ours1=\emph{Strategy Pool}, Ours2=\emph{Strategy Pool + Momentum}. We report four similarity metrics that are standard in plagiarism analysis: TF-IDF cosine similarity, Code-BERT similarity~\citep{feng2020codebert}, Levenshtein similarity, and token-sequence overlap score. Using 16 search budget and 6 self-generated validation tests, Ours2 yields the lowest similarity, and Ours1 yields the second best.
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\columnwidth]{fig/apps_similarity_2x2_grid.pdf}
-  \caption{Comparison of solution similarity metrics (TF–IDF, BERT, Levenshtein, and Token-sequence overlap) across methods on the APPS. }
-  \label{fig:sim}
-\end{figure}
-
-
-We can observe that CodeBERT similarity is almost saturated ($0.997\!\sim\!0.999$) and thus offers little discriminative power across candidates. Therefore,  for the momentum trigger, we \emph{exclude} the BERT score and select other similarity scores as the similarity threshold $\boldsymbol{\theta}_{\textbf{sim}}$ and compute $\boldsymbol{\Phi} \left(\mathfrak{i}_i \parallel \mathfrak{i}_j\right)$ in \autoref{eq:momentum_trigger_v2}. Figure~\ref{fig:mylabel} studies the relation between \emph{solution diversity} and performance on \textsc{APPS}. We measure the average pairwise similarity among the $16$ candidates produced by each method with four standard metrics and report Pass@Any on the $y$-axis. Across all six methods (Line, Tree, Genetic, SFS, Ours1, Ours2), we observe a strong \textbf{negative} correlation between similarity and performance: \emph{lower} similarity (i.e., \emph{higher} diversity) is associated with \emph{higher} Pass@\!$Any$/Pass@\!$K$. Consistently, \textbf{Ours2} attains the \emph{lowest inter-solution similarity} while achieving the \emph{highest} Pass@\!$Any$, showing that the strategy pool increases diversity, while the momentum further amplifies it by injecting underused strategies.
-
-\begin{figure*}[t]
-\centering
-\begin{subfigure}[b]{0.74\textwidth}
-  \centering
-  \includegraphics[height=4.2cm]{fig/similarity_vs_performance_with_legend.pdf}
-  \caption{\textbf{Diversity Analysis:} Lower Similarity Correlates with Higher Pass@\!$Any$ Performance in APPS dataset for 6 search method. \emph{Average} denotes the per-method mean of the four similarities.}
-  \label{fig:mylabel}
-\end{subfigure}\hfill
-\begin{subfigure}[b]{0.24\textwidth}
-  \centering
-  \includegraphics[height=4.2cm]{fig/ablation_study_curve.pdf}
-  \caption{Component ablation shows the momentum gains: the full Momentum module (red line) achieves the best Pass@K curve throughout 40 iterations.}
-  \label{fig:left-momentum}
-\end{subfigure}
-\end{figure*}
-
-\subsubsection{Diversity Insight and Application}
+\subsection{Diversity and Ablation Analysis}
 \label{diversity}
-Two key patterns emerge from Figure \ref{fig:mylabel} (i) across all six methods: the Pearson correlation between similarity and Pass@Any is strongly negative ($0.97\!\sim\!0.99$), and the method with the lowest inter-solution similarity (Ours2) attains the highest Pass@\!$Any$. (ii) This implies the insight that under inference-time scaling in many search methods, especially for code generation, \textbf{\textit{variations can fix different failure modes, and more output diversity consistently yields better performance}}. So, as Figure~\ref{fig:cc-vis-1} shows, we augment SFS~\citep{light2025sfs} with a lightweight \emph{workflow layer}.
-At each node/state $\textcolor{lightblue}{\boldsymbol{s}}$, the current partial solution is converted into a Mermaid-style
-workflow $\mathcal{W}(\textcolor{lightblue}{\boldsymbol{s}})$. During expansion, we apply workflow operators to obtain variants $\mathcal{W}_i(\textcolor{lightblue}{\boldsymbol{s}})$; we can \textit{mutate} by making small edits to step content or tool choice, or we can change step order while preserving dependencies, as in ~\citep{zheng2025mermaidflow}. Each  $\mathcal{W}(\textcolor{lightblue}{\boldsymbol{s}})$ is instantiated to produce concrete code candidates.
-This workflow layer injects \emph{controlled diversity}, consistent with the
-diversity\(\rightarrow\)performance insight above, and yields gains over vanilla
-SFS on \textsc{CodeContests} (Fig.~\ref{fig:cc-vis-1}; improvements on Pass@1/10/15), more details can be found in Appendix~\ref{apps:workflow}. We also observe analogous gains when we inject diversity into BoN and enhanced-BoN~\citep{wang2025diversified} (details in Appendix~\ref{apps:bon}).
-
-
-
-\subsection{Ablation Study}
-Figure~\ref{fig:left-momentum} presents the component ablation study on the APPS benchmark. Using 40 search budget and 6 self-generated validation tests by GPT4-o-mini (without ground-truth), starting from the Baseline SFS, adding Reverse Thinking (simple strategy) gives a clear early-stage lift, but quickly plateaus. Introducing the Strategy Pool provides an additional mid-budget gain by injecting diverse reasoning styles. Adding Atomic Combine (gray solid), like crossover/mutation without any trigger, will yield only a small improvement. When we enable Momentum with a simple diversity trigger (only use one similarity trigger), the curve keeps climbing in later iterations, showing that rebalancing underused strategies helps escape local traps. Our \textit{Full Momentum} module (red), which uses the full similarity trigger. We employ \emph{three} diversity-based signals as momentum triggers: TF–IDF cosine, Levenshtein, and token-sequence overlap, exactly as defined in the diversity section. Using this composite similarity trigger together with $\varepsilon$-soft scheduling dominates the whole range and achieves the best Pass@\!$K$ by the $40^{\text{th}}$ iteration. The details of the ablation method will be shown in the Appendix ~\ref{apps:ablation}.
-
-
-
-
-
-
-
-
-
-
+We measure pairwise solution similarity on \textsc{APPS} with TF-IDF, CodeBERT, Levenshtein, and token-overlap metrics. Ours2 (Strategy Pool + Momentum) gives the lowest inter-solution similarity, while Ours1 is consistently second best. CodeBERT is nearly saturated ($0.997{\sim}0.999$), so the momentum trigger uses TF-IDF, Levenshtein, and token overlap. Across six methods, lower similarity strongly correlates with higher Pass@\!$Any$ ($|r|=0.97{\sim}0.99$), supporting our claim that diversity repairs different failure modes; Figure~\ref{fig:diversity-performance-main} visualizes this trend. Ablations further show that full momentum dominates single-trigger variants and other components by the $40^{\text{th}}$ iteration; definitions and full plots are deferred to Appendix~\ref{apps:diversity-details} and Appendix~\ref{apps:ablation}. We also apply this insight to workflow diversification, which improves SFS on \textsc{CodeContests} (Appendix~\ref{apps:workflow}) and transfers to BoN-style pipelines (Appendix~\ref{apps:bon}).
 
 
 \subsection{Strategy Pool on Reasoning for Error Checking}
@@ -582,7 +539,7 @@ AGrail           & 8.75            & 98.46 & 94.59 \\
 \label{safety}
 \end{table}
 
-We evaluate some test-time detection methods under three benchmarks: Mind2Web-SC~\citep{deng2023mind2web,xiang2025guardagent}, AdvWeb~\citep{xu2025advagent}, and EICU-AC~\citep{xiang2025guardagent}. A line of recent frameworks performs Test-Time Scaling (TTS) by iteratively refining safety checks while the agent operates, conceptually similar to BoN/MCTS-style search that selects an effective set of safe checks for each action type~\citep{luo-etal-2025-agrail,xiang2025guardagent}. These systems have shown strong results on the above datasets. Concretely, consider an OS agent asked to move a file: without safeguards, it may overwrite an existing file at the destination~\citep{xiang2025guardagent}. Building on prior results, we maintain that \emph{diverse reasoning strategies are critical}, as only heterogeneous checking trajectories expose the broader set of errors that would otherwise escape detection. Our \textit{Strategy Pool} is a drop-in addition to this TTS pipeline~\citep{luo-etal-2025-agrail}: by providing diverse reasoning strategies, it broadens the search over candidate checks and improves the reliability and coverage of safety monitoring like Table~\ref{safety}. More experiment details can be found in the Appendix~\ref{appendix:safe}.
+We also test \ourmethod as a strategy-pool layer for test-time safety detection. Table~\ref{safety} shows that it lowers AdvWeb ASR and improves EICU-AC accuracy while matching AGrail on Mind2Web-SC, suggesting that diverse checking strategies broaden coverage without changing the underlying detector. Details are in Appendix~\ref{appendix:safe}.
 
 
 
@@ -590,8 +547,16 @@ We evaluate some test-time detection methods under three benchmarks: Mind2Web-SC
 
 
 \section{Conclusion}
-We introduced \textbf{EvoMo}, an inference-time scaling framework that unifies \emph{goal-oriented} search and \emph{process-oriented} diversification by injecting a globally evolving \emph{strategy pool} into MCTS and steering it with a \emph{similarity-triggered momentum} controller. This design enlarges the decision space from single actions to reasoning strategies (selected via an $\varepsilon$-soft policy) and proactively rebalances underused strategies when solutions begin to homogenize. Across diverse benchmarks: code (like HumanEval, MBPP, LeetCode) and safety detection, EvoMo consistently improves Pass@\!$K$ over strong baselines (e.g., SFS). While remaining \emph{plug-and-play and training-free}, making it easy to integrate into existing inference pipelines without any additional model tuning. Ablations show that even the strategy pool alone yields reliable gains, and momentum contributes a substantial share of the improvement by escaping premature convergence and broadening search coverage. 
+We introduced \textbf{EvoMo}, a training-free inference-time scaling framework that injects an evolving strategy pool into MCTS and steers it with a similarity-triggered momentum controller. By expanding decisions from local actions to reusable reasoning strategies, EvoMo combines goal-oriented feedback with process-oriented diversification. Experiments show consistent Pass@\!$K$ gains across code and safety settings, while ablations confirm that momentum prevents premature convergence by rebalancing underused strategies.
 
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=0.96\textwidth]{fig/diversity_performance_compact.pdf}
+  \caption{\textbf{Diversity-performance relation.} Lower solution similarity correlates with higher Pass@\!$Any$ on \textsc{APPS}; \emph{Average} denotes the per-method mean of the four similarity metrics.}
+  \label{fig:diversity-performance-main}
+\end{figure*}
+
+\clearpage
 \section{Limitations}
 Our evaluation focuses mainly on code-generation and safety-detection settings, so broader validation is still needed for open-ended natural language reasoning, multilingual tasks, and domains with different verifier characteristics. EvoMo also relies on external feedback signals, such as generated tests or reward estimates, whose quality can affect search efficiency and final accuracy. Finally, although the method is training-free, it spends additional inference-time compute; future work should study adaptive budget allocation and stronger stopping criteria.
 
@@ -729,6 +694,7 @@ Casimir has a string $s$ consisting only of capital letters \texttt{A}, \texttt{
 
 
 \subsection{Details about Diversity Experiment}
+\label{apps:diversity-details}
 To comprehensively evaluate the diversity of solutions generated by different search methods, we employ four similarity metrics that are standard in code and reasoning analysis. Each metric captures different aspects of solution similarity, providing a multi-faceted view of diversity.
 
 \paragraph{TF-IDF Cosine Similarity:} 
