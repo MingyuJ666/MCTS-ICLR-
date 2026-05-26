@@ -113,7 +113,7 @@
 
 
 
-Large language models (LLMs) have demonstrated strong reasoning ability when given additional compute at inference time. However, existing inference-time scaling methods are fundamentally limited by their design. On the one hand, \textit{goal-oriented} approaches, such as Line or Tree Search, refine candidate solutions using previous feedback but are vulnerable to sequential dependence, often collapsing into suboptimal reasoning trajectories. On the other hand, \textit{process-oriented} approaches such as Best-of-N sampling encourage diversity through random exploration but lack feedback mechanisms, leading to inefficient computation allocation and unguided search. In this work, we propose \textbf{\textit{EvoMo}}, a novel inference-time scaling approach that unifies both paradigms by embedding a globally evolving strategy pool into MCTS, where each node expansion selects reasoning strategies under an $\varepsilon$-soft policy. To further avoid stagnation in familiar strategies, we introduce a \textit{momentum-based optimization} mechanism that monitors similarity among generated solutions and encourages the exploration of underutilized strategies. We also present a theoretical analysis of the effectiveness of the proposed momentum mechanism by modeling it as a self-evolving pool of actions. Across benchmarks, \textbf{\textit{EvoMo}} reveals significant performance gains over SOTA inference scaling methods. We observe competitive performance, like in APPS and CodeContests, with up to a 4.5\% and 3.63\% relative gain in Pass@K compared to the leading baseline within 40 search-budget, highlighting the potential of hybrid evolutionary search as a general paradigm for test-time scaling. The source code is available at the URL: ~\url{https://anonymous.4open.science/r/EVO-MCTS-3BC8/}.
+Large language models (LLMs) have demonstrated strong reasoning ability when given additional compute at inference time. However, existing inference-time scaling methods are fundamentally limited by their design. On the one hand, \textit{goal-oriented} approaches, such as Line or Tree Search, refine candidate solutions using previous feedback but are vulnerable to sequential dependence, often collapsing into suboptimal reasoning trajectories. On the other hand, \textit{process-oriented} approaches such as Best-of-N sampling encourage diversity through random exploration but lack feedback mechanisms, leading to inefficient computation allocation and unguided search. In this work, we propose \textbf{\textit{EvoMo}}, a novel inference-time scaling approach that unifies both paradigms by embedding a globally evolving strategy pool into MCTS, where each node expansion selects reasoning strategies under an $\varepsilon$-soft policy. To further avoid stagnation in familiar strategies, we introduce a \textit{momentum-based optimization} mechanism that monitors similarity among generated solutions and encourages the exploration of underutilized strategies. We also present a theoretical analysis of the effectiveness of the proposed momentum mechanism by modeling it as a self-evolving pool of actions. Across benchmarks, \textbf{\textit{EvoMo}} reveals significant performance gains over SOTA inference scaling methods. We observe competitive performance, like in APPS and CodeContests, with up to a 4.5\% and 3.63\% relative gain in Pass@K compared to the leading baseline within 40 search-budget, highlighting the potential of hybrid evolutionary search as a general paradigm for test-time scaling.
 
 
 \end{abstract}
@@ -297,7 +297,7 @@ To demonstrate whether our \textit{strategy pool} is effective and offers tangib
 
 
 
-\begin{figure}[h]  % t/h 根据需要调整
+\begin{figure*}[t]
   \centering
   % ---- 子图 A -------------------------------------------------
   \begin{subfigure}[t]{0.32\textwidth}
@@ -322,10 +322,9 @@ To demonstrate whether our \textit{strategy pool} is effective and offers tangib
     \caption{\textbf{CodeContests} Pass@\!$K$ }
     \label{fig:mbpp-passk}
   \end{subfigure}
-  \vspace{-0.6em}
-  \caption{Performance of our strategy pool's improvement on three benchmarks and four methods. (a) (b)~Token/solution BoN scaling on \textsc{GMS-Hard} and \textsc{MMLU-PRO}. (c)Pass@\!$K$  gains on \textsc{CodeContests} for 16 search budget. All these experiments are executed with GPT4-o-mini.}
+  \caption{Performance gains from the strategy pool. (a) and (b): BoN scaling on \textsc{GMS-Hard} and \textsc{MMLU-PRO}; (c): Pass@\!$K$ gains on \textsc{CodeContests} with a 16-search budget. All experiments use \texttt{GPT-4o-mini}.}
   \label{fig:combined}
-\end{figure}
+\end{figure*}
 
 To test the \emph{plug-and-play} generality of our strategy pool beyond BoN, we insert our strategy pool into three search methods: MCTS tree search, genetic algorithm, and Scattered Forest Search (SFS) in \textsc{CodeContests} dataset. Across all methods, Pass@\!$K$ improves under the same search budget, yielding consistent gains 
 of about $+1.2\!\sim\!+3.6$ percentage points 
@@ -609,7 +608,7 @@ Our work focuses on advancing inference-time scaling techniques for large langua
 
 \section{Reproducibility Statement}
 
-Our work is reproducible. The source code is available at \url{https://anonymous.4open.science/r/EVO-MCTS-3BC8/}. The Experiment details can be found in Appendix~\ref{experiment111}. All hyperparameters, search budgets, and evaluation setups are documented in detail in Appendix~\ref{experiment111}. We strictly follow standard benchmarks (APPS, HumanEval, MBPP+, LeetCode, and CodeContests), with clear descriptions of dataset splits and validation protocols. For coding experiments, we use a fixed number of generated solutions and uniformly 6 hidden validation tests per problem to ensure fair comparison. We also provide ablations across compute budgets and model backbones to validate robustness. Together, these practices ensure that our reported results can be independently verified.
+Our work is reproducible. The experiment details can be found in Appendix~\ref{experiment111}. All hyperparameters, search budgets, and evaluation setups are documented in detail in Appendix~\ref{experiment111}. We strictly follow standard benchmarks (APPS, HumanEval, MBPP+, LeetCode, and CodeContests), with clear descriptions of dataset splits and validation protocols. For coding experiments, we use a fixed number of generated solutions and uniformly 6 hidden validation tests per problem to ensure fair comparison. We also provide ablations across compute budgets and model backbones to validate robustness. Together, these practices ensure that our reported results can be independently verified.
 
 
 % \newpage
