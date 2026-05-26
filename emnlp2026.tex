@@ -504,6 +504,13 @@ We observe a clear monotonic pattern: models with stronger backbones exhibit fas
 
 
 
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=0.96\textwidth]{fig/diversity_performance_compact.pdf}
+  \caption{\textbf{Diversity-performance relation.} Lower solution similarity correlates with higher Pass@\!$Any$ on \textsc{APPS}; \emph{Average} denotes the per-method mean of the four similarity metrics.}
+  \label{fig:diversity-performance-main}
+\end{figure*}
+
 \subsection{Diversity and Ablation Analysis}
 \label{diversity}
 We measure pairwise solution similarity on \textsc{APPS} with TF-IDF, CodeBERT, Levenshtein, and token-overlap metrics. Ours2 (Strategy Pool + Momentum) gives the lowest inter-solution similarity, while Ours1 is consistently second best. CodeBERT is nearly saturated ($0.997{\sim}0.999$), so the momentum trigger uses TF-IDF, Levenshtein, and token overlap. Across six methods, lower similarity strongly correlates with higher Pass@\!$Any$ ($|r|=0.97{\sim}0.99$), supporting our claim that diversity repairs different failure modes; Figure~\ref{fig:diversity-performance-main} visualizes this trend. Ablations further show that full momentum dominates single-trigger variants and other components by the $40^{\text{th}}$ iteration; definitions and full plots are deferred to Appendix~\ref{apps:diversity-details} and Appendix~\ref{apps:ablation}. We also apply this insight to workflow diversification, which improves SFS on \textsc{CodeContests} (Appendix~\ref{apps:workflow}) and transfers to BoN-style pipelines (Appendix~\ref{apps:bon}).
@@ -549,14 +556,6 @@ We also test \ourmethod as a strategy-pool layer for test-time safety detection.
 \section{Conclusion}
 We introduced \textbf{EvoMo}, a training-free inference-time scaling framework that injects an evolving strategy pool into MCTS and steers it with a similarity-triggered momentum controller. By expanding decisions from local actions to reusable reasoning strategies, EvoMo combines goal-oriented feedback with process-oriented diversification. Experiments show consistent Pass@\!$K$ gains across code and safety settings, while ablations confirm that momentum prevents premature convergence by rebalancing underused strategies.
 
-\begin{figure*}[t]
-  \centering
-  \includegraphics[width=0.96\textwidth]{fig/diversity_performance_compact.pdf}
-  \caption{\textbf{Diversity-performance relation.} Lower solution similarity correlates with higher Pass@\!$Any$ on \textsc{APPS}; \emph{Average} denotes the per-method mean of the four similarity metrics.}
-  \label{fig:diversity-performance-main}
-\end{figure*}
-
-\clearpage
 \section{Limitations}
 Our evaluation focuses mainly on code-generation and safety-detection settings, so broader validation is still needed for open-ended natural language reasoning, multilingual tasks, and domains with different verifier characteristics. EvoMo also relies on external feedback signals, such as generated tests or reward estimates, whose quality can affect search efficiency and final accuracy. Finally, although the method is training-free, it spends additional inference-time compute; future work should study adaptive budget allocation and stronger stopping criteria.
 
