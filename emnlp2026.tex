@@ -1,22 +1,28 @@
-\documentclass{article} % For LaTeX2e
-\usepackage{iclr2025_conference,times}
+\documentclass[11pt]{article}
+
+\PassOptionsToPackage{table,dvipsnames}{xcolor}
+\usepackage[review]{acl}
+
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\IfFileExists{inconsolata.sty}{\usepackage{inconsolata}}{}
 \input{math_commands.tex}
 \usepackage{booktabs} 
-\usepackage{hyperref}
-\usepackage{url}
 \usepackage{multirow}
 \usepackage{threeparttable}
-\usepackage{xcolor}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \definecolor{lightblue}{RGB}{100, 149, 237}
-\usepackage[ruled,vlined,linesnumbered]{algorithm2e} 
 \usepackage{amsthm}
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{proposition}[theorem]{Proposition}
+\providecommand*{\definitionautorefname}{Definition}
 \usepackage{graphicx}   % \includegraphics
 \usepackage{subcaption} % subfigure 环境
 \newtheorem{corollary}[theorem]{Corollary}
@@ -25,17 +31,15 @@
 \newtheorem{remark}[theorem]{Remark}
 \usepackage{wrapfig}
 \usepackage[most]{tcolorbox}
+\usepackage{xspace}
 
 \newcommand{\ourmethod}{{\fontfamily{lmtt}\selectfont EvoMo}\xspace}
 \newcommand{\ours}{{\fontfamily{lmtt}\selectfont \textbf{Ours1 (strategy pool)  }}\xspace}
 \newcommand{\bidirectional}{{\fontfamily{lmtt}\selectfont \textbf{bi-directional reasoning paradigm}}\xspace}
-\usepackage[utf8]{inputenc}
-\usepackage{xcolor}
 \definecolor{mygrey}{rgb}{0.5,0.5,0.5}
 \definecolor{bg}{rgb}{0.96,0.96,0.96}% simple URL 
 \definecolor{softblue}{RGB}{45, 120, 69}
 \definecolor{darkgreen}{RGB}{30, 70, 88}
-\usepackage{hyperref}  % Loaded without options earlier in the document
 \hypersetup{
     colorlinks,
     linkcolor=blue,
@@ -59,21 +63,11 @@
 
 
 
-\usepackage{amssymb}
 \usepackage[normalem]{ulem}
-\usepackage{bbm}
-\usepackage{bbding}
 
 \usepackage{booktabs,threeparttable,makecell}
-\usepackage{siunitx}
-\sisetup{detect-weight=true,detect-family=true}
 \newcommand{\bestcell}[1]{\textbf{\color{ForestGreen}{#1}}}
 \newcommand{\runnerup}[1]{\underline{#1}}
-
-
-\usepackage[table,dvipsnames]{xcolor}  % 提供 \rowcolor 且支持 CadetBlue
-
-
 
 
 \title{When Evolution Meets Momentum: Orchestrating Goal-oriented and Process-oriented reasoning for LLM Inference Scaling}
@@ -95,6 +89,8 @@
 % \texttt{henrygwb@ucsb.edu}
 % }
 
+\author{Anonymous EMNLP submission}
+
 % The \author macro works with any number of authors. There are two commands
 % used to separate the names and addresses of multiple authors: \And and \AND.
 %
@@ -106,7 +102,6 @@
 \newcommand{\fix}{\marginpar{FIX}}
 \newcommand{\new}{\marginpar{NEW}}
 
-% \iclrfinalcopy % Uncomment for camera-ready version, but NOT for submission.
 \begin{document}
 
 
@@ -341,11 +336,11 @@ of about $+1.2\!\sim\!+3.6$ percentage points
 \label{tab:pass_comparison}
 
 \begin{tabular}{l|%
-S[table-format=2.2]S[table-format=2.2]|%
-S[table-format=2.2]S[table-format=2.2]|%
-S[table-format=2.2]S[table-format=2.2]|%
-S[table-format=2.2]S[table-format=2.2]|%
-S[table-format=2.2]S[table-format=2.2]}
+cc|%
+cc|%
+cc|%
+cc|%
+cc}
 \Xhline{1.2pt}
 \rowcolor{CadetBlue!20}
 \multirow{2}{*}{\cellcolor{CadetBlue!20}\makecell[c]{\textbf{Method}\\[-2.6ex]\rule{0pt}{3ex}}} &
@@ -429,7 +424,7 @@ momentum in breaking similarity plateaus and sustaining exploration.
       {\setlength{\aboverulesep}{0pt}\setlength{\belowrulesep}{0pt}%
        \setlength{\tabcolsep}{3pt}% 紧一点以适应单栏三列排
        \scalebox{0.97}{%
-       \begin{tabular}{l|S[table-format=2.2]S[table-format=2.2]S[table-format=2.2]}
+       \begin{tabular}{l|ccc}
        \Xhline{1.2pt}
        \rowcolor{CadetBlue!20}
        \textbf{Method} &
@@ -547,7 +542,7 @@ Figure~\ref{fig:left-momentum} presents the component ablation study on the APPS
 \begin{threeparttable}
 \begingroup
 \setlength{\arrayrulewidth}{0.6pt}
-\begin{tabular}{l|S[table-format=3.2]S[table-format=3.2]S[table-format=3.2]}
+\begin{tabular}{l|ccc}
 \specialrule{\heavyrulewidth}{0pt}{0pt}
 \rowcolor{CadetBlue!18}
 \multicolumn{1}{c|}{\textbf{Method}} &
@@ -595,7 +590,8 @@ mathematics and logic tasks, while surpassing conventional methods using only 10
 \section{Conclusion}
 We introduced \textbf{EvoMo}, an inference-time scaling framework that unifies \emph{goal-oriented} search and \emph{process-oriented} diversification by injecting a globally evolving \emph{strategy pool} into MCTS and steering it with a \emph{similarity-triggered momentum} controller. This design enlarges the decision space from single actions to reasoning strategies (selected via an $\varepsilon$-soft policy) and proactively rebalances underused strategies when solutions begin to homogenize. Across diverse benchmarks: code (like HumanEval, MBPP, LeetCode) and safety detection, EvoMo consistently improves Pass@\!$K$ over strong baselines (e.g., SFS). While remaining \emph{plug-and-play and training-free}, making it easy to integrate into existing inference pipelines without any additional model tuning. Ablations show that even the strategy pool alone yields reliable gains, and momentum contributes a substantial share of the improvement by escaping premature convergence and broadening search coverage. 
 
-\newpage
+\section{Limitations}
+Our evaluation focuses mainly on code-generation and safety-detection settings, so broader validation is still needed for open-ended natural language reasoning, multilingual tasks, and domains with different verifier characteristics. EvoMo also relies on external feedback signals, such as generated tests or reward estimates, whose quality can affect search efficiency and final accuracy. Finally, although the method is training-free, it spends additional inference-time compute; future work should study adaptive budget allocation and stronger stopping criteria.
 
 \section{Ethics Statement}
 Our work focuses on advancing inference-time scaling techniques for large language models through search and strategy optimization. We emphasize that our methods are designed as general-purpose reasoning frameworks and do not involve training on, collecting, or annotating sensitive data. The evaluation benchmarks (APPS, HumanEval, MBPP+, LeetCode, and CodeContests) are all publicly available and widely adopted in the community. As such, this work does not pose foreseeable ethical risks beyond those already inherent to LLMs, such as potential misuse in generating incorrect or biased code. We encourage responsible deployment and recommend that future applications of our framework incorporate safety checks and domain-specific constraints where necessary.
@@ -613,15 +609,8 @@ Our work is reproducible. The source code is available at \url{https://anonymous
 
 
 
-\bibliography{iclr2025_conference}
-\bibliographystyle{iclr2025_conference}
+\bibliography{emnlp2026}
 
-\appendix
-
-
-\clearpage
-\tableofcontents
-\clearpage
 \appendix
 
 \input{theory.tex}
@@ -813,7 +802,7 @@ This metric quantifies the \textit{solution space coherence} for a given problem
 % 局部化：去掉规则线上下留白
 {\setlength{\abovetopsep}{0pt}\setlength{\belowbottomsep}{0pt}%
  \setlength{\aboverulesep}{0pt}\setlength{\belowrulesep}{0pt}%
-\begin{tabular}{l|S[table-format=1.4]S[table-format=1.4]S[table-format=1.4]S[table-format=1.4]}
+\begin{tabular}{l|cccc}
 \specialrule{\heavyrulewidth}{0pt}{0pt}
 \rowcolor{CadetBlue!20}
 \textbf{Method} &
@@ -835,7 +824,7 @@ SFS      & \runnerup{0.7251} & \runnerup{0.9984} & \runnerup{0.7754} & \runnerup
 \subfloat[MBPP+]{
 {\setlength{\abovetopsep}{0pt}\setlength{\belowbottomsep}{0pt}%
  \setlength{\aboverulesep}{0pt}\setlength{\belowrulesep}{0pt}%
-\begin{tabular}{l|S[table-format=1.4]S[table-format=1.4]S[table-format=1.4]S[table-format=1.4]}
+\begin{tabular}{l|cccc}
 \specialrule{\heavyrulewidth}{0pt}{0pt}
 \rowcolor{CadetBlue!20}
 \textbf{Method} &
@@ -870,7 +859,7 @@ SFS      & \runnerup{0.6935} & \runnerup{0.9980} & \runnerup{0.7532} & \runnerup
 \subfloat[APPS]{%
 {\setlength{\abovetopsep}{0pt}\setlength{\belowbottomsep}{0pt}%
  \setlength{\aboverulesep}{0pt}\setlength{\belowrulesep}{0pt}%
-\begin{tabular}{l|S[table-format=1.4]S[table-format=1.4]S[table-format=1.4]S[table-format=1.4]}
+\begin{tabular}{l|cccc}
 \specialrule{\heavyrulewidth}{0pt}{0pt}
 \rowcolor{CadetBlue!20}
 \textbf{Method} &
@@ -894,7 +883,7 @@ Ours1      & \runnerup{0.5268} & \runnerup{0.9975} & \runnerup{0.6826} & 0.6868 
 \subfloat[CodeContest]{%
 {\setlength{\abovetopsep}{0pt}\setlength{\belowbottomsep}{0pt}%
  \setlength{\aboverulesep}{0pt}\setlength{\belowrulesep}{0pt}%
-\begin{tabular}{l|S[table-format=1.4]S[table-format=1.4]S[table-format=1.4]S[table-format=1.4]}
+\begin{tabular}{l|cccc}
 \specialrule{\heavyrulewidth}{0pt}{0pt}
 \rowcolor{CadetBlue!20}
 \textbf{Method} &
@@ -922,7 +911,7 @@ Ours1     & \runnerup{0.5762} & 0.9980 & 0.7065 & \runnerup{0.6904} \\
 \subfloat[LeetCode]{%
 {\setlength{\abovetopsep}{0pt}\setlength{\belowbottomsep}{0pt}%
  \setlength{\aboverulesep}{0pt}\setlength{\belowrulesep}{0pt}%
-\begin{tabular}{l|S[table-format=1.4]S[table-format=1.4]S[table-format=1.4]S[table-format=1.4]}
+\begin{tabular}{l|cccc}
 \specialrule{\heavyrulewidth}{0pt}{0pt}
 \rowcolor{CadetBlue!20}
 \textbf{Method} &
@@ -1238,9 +1227,9 @@ We evaluate safety detection performance using a comprehensive set of metrics: \
 
 \begin{tabular}{
 l|
-S[table-format=3.1]S[table-format=3.1]S[table-format=3.1]S[table-format=3.1]|
-S[table-format=3.1]|
-S[table-format=3.1]S[table-format=3.1]S[table-format=3.1]
+cccc|
+c|
+ccc
 }
 \Xhline{1.2pt}
 \rowcolor{CadetBlue!20}
@@ -1438,7 +1427,7 @@ These improvements work together with the original MCTS framework - the strategy
 \begin{tcolorbox}[notitle, sharp corners, breakable, colframe=ForestGreen, colback=white, 
        boxrule=3pt, boxsep=0.5pt, enhanced, 
        shadow={3pt}{-3pt}{0pt}{opacity=1,mygrey},
-       title={Global Thinking Guidance},]\label{box:tag-generate}
+       title={Global Thinking Guidance},]\label{box:global-thinking-guidance}
        \scriptsize
        {\fontfamily{pcr}\selectfont
 \begin{lstlisting}
@@ -1490,7 +1479,7 @@ needed for effective problem-solving.
 \begin{tcolorbox}[notitle, sharp corners, breakable, colframe=Periwinkle, colback=white, 
        boxrule=3pt, boxsep=0.5pt, enhanced, 
        shadow={3pt}{-3pt}{0pt}{opacity=1,mygrey},
-       title={Different Thinking Strategy(Mode)},]\label{box:tag-generate}
+       title={Different Thinking Strategy(Mode)},]\label{box:different-thinking-strategy}
        \scriptsize
        
 \begin{lstlisting}
@@ -1529,7 +1518,7 @@ initial state. Use the end goal to guide your approach
 \begin{tcolorbox}[notitle, sharp corners, breakable, colframe=black, colback=white, 
        boxrule=3pt, boxsep=0.5pt, enhanced, 
        shadow={3pt}{-3pt}{0pt}{opacity=1,mygrey},
-       title={Diversity-enhancing Tips},]\label{box:tag-generate}
+       title={Diversity-enhancing Tips},]\label{box:diversity-enhancing-tips}
        \scriptsize
        
 \begin{lstlisting}
@@ -1552,7 +1541,7 @@ initial state. Use the end goal to guide your approach
 \begin{tcolorbox}[notitle, sharp corners, breakable, colframe=black, colback=white, 
        boxrule=3pt, boxsep=0.5pt, enhanced, 
        shadow={3pt}{-3pt}{0pt}{opacity=1,mygrey},
-       title={Idea Fusion Prompt},]\label{box:tag-generate}
+       title={Idea Fusion Prompt},]\label{box:idea-fusion-prompt}
        \scriptsize
        
 \begin{lstlisting}
