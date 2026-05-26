@@ -201,7 +201,15 @@ each child state $\textcolor{lightblue}{\boldsymbol{s'}}$ and corresponding acti
 \textbf{Backpropagation.} After the simulation produces an outcome value $v(\textcolor{lightblue}{\boldsymbol{s'}})$, this result is propagated back up through the search tree to update the statistics of all nodes along the path from the leaf $\textcolor{lightblue}{\boldsymbol{s'}}$ back to the root $\textcolor{lightblue}{\boldsymbol{s_0}}$. The backpropagation process updates two key statistics for each state-action pair $(\textcolor{lightblue}{\boldsymbol{s}}, \textcolor{red}{\boldsymbol{d}})$ visited during the selection phase along the trajectory $t = [\textcolor{lightblue}{\boldsymbol{s_0}}, \textcolor{red}{\boldsymbol{d_1}}, \textcolor{lightblue}{\boldsymbol{s_1}}, \textcolor{red}{\boldsymbol{d_2}}, \ldots, \textcolor{lightblue}{\boldsymbol{s_{-1}}}]$ (complete path from the root node to the leaf node in MCTS). The visit count $n(\textcolor{lightblue}{\boldsymbol{s}}, \textcolor{red}{\boldsymbol{d}})$ is incremented by 1, and the estimated action value $\hat{Q}(\textcolor{lightblue}{\boldsymbol{s}}, \textcolor{red}{\boldsymbol{d}})$ is updated using a weighted average that incorporates the new simulation result while preserving information from previous simulations, as shown in Equation \ref{eq:bp}.
 \begin{equation}
 \label{eq:bp}
-\hat{Q}(\textcolor{lightblue}{\boldsymbol{s_i}}, \textcolor{red}{\boldsymbol{d_{i+1}}})^{(t+1)} \leftarrow (1 - \alpha_n)\hat{Q}(\textcolor{lightblue}{\boldsymbol{s_i}}, \textcolor{red}{\boldsymbol{d_{i+1}}})^{(t)} + \alpha_n \max\{\hat{Q}(\textcolor{lightblue}{\boldsymbol{s_i}}, \textcolor{red}{\boldsymbol{d_{i+1}}})^{(t)}, \hat{Q}(\textcolor{lightblue}{\boldsymbol{s_{i+1}}}, \textcolor{red}{\boldsymbol{d_{i+2}}})^{(t+1)}\}
+\begin{aligned}
+\hat{Q}(s_i,d_{i+1})^{(t+1)}
+&\leftarrow (1-\alpha_n)\hat{Q}(s_i,d_{i+1})^{(t)} \\
+&\quad + \alpha_n \max\left\{
+\hat{Q}(s_i,d_{i+1})^{(t)},\right.\\
+&\qquad\qquad\quad \left.
+\hat{Q}(s_{i+1},d_{i+2})^{(t+1)}
+\right\}.
+\end{aligned}
 \end{equation}
 Where $\alpha_n$ is a weighting parameter that depends on the visit count $n(\textcolor{lightblue}{\boldsymbol{s}}, \textcolor{red}{\boldsymbol{d}})$, and the $\max$ operation can ensure that only the best-performing solutions along the trajectory are prioritized. 
 
@@ -219,10 +227,14 @@ A reasoning strategy $\textcolor{orange}{\boldsymbol{\tau}} \in \textcolor{orang
 The strategy selection is based on an \textit{$\varepsilon$-soft policy} that balances exploitation of high-performing strategies with exploration of the diverse strategy pool. Given a state $\textcolor{lightblue}{\boldsymbol{s}}$, the probability of selecting strategy $\textcolor{orange}{\boldsymbol{\tau}}$ is defined as Equation \ref{eq:strategy_selection}, where $\varepsilon$ is the exploration parameter and $|\textcolor{orange}{\mathcal{T}}|$ denotes the size of the strategy pool. $\textcolor{orange}{\boldsymbol{\tau'}}$ represents the candidate strategy in the strategy pool, and $\textcolor{orange}{\boldsymbol{\tau}}$ represents the optimal strategy selected. This approach ensures that: (1) most of the time (probability $1-\varepsilon$), the system exploits the currently best-performing strategy based on accumulated Q-values, and (2) a small portion of the time (probability $\varepsilon$), it explores alternative strategies to maintain diversity. 
 \begin{equation}
 \label{eq:strategy_selection}
-\pi(\textcolor{orange}{\boldsymbol{\tau}}|\textcolor{lightblue}{\boldsymbol{s}}) = \begin{cases}
-1 - \varepsilon + \frac{\varepsilon}{|\textcolor{orange}{\mathcal{T}}|}, & \text{if } \textcolor{orange}{\boldsymbol{\tau}} = \arg\max_{\textcolor{orange}{\boldsymbol{\tau'}}} Q(\textcolor{lightblue}{\boldsymbol{s}}, \textcolor{orange}{\boldsymbol{\tau'}}) \\
-\frac{\varepsilon}{|\textcolor{orange}{\mathcal{T}}|}, & \text{otherwise}
-\end{cases}
+\begin{aligned}
+\pi(\tau|s) &=
+\begin{cases}
+1-\varepsilon+\dfrac{\varepsilon}{|\mathcal{T}|}, & \tau=\tau^\star(s), \\
+\dfrac{\varepsilon}{|\mathcal{T}|}, & \text{otherwise},
+\end{cases} \\
+\tau^\star(s) &= \arg\max_{\tau'\in\mathcal{T}} Q(s,\tau').
+\end{aligned}
 \end{equation}
 This adaptive selection mechanism enables the system to dynamically adjust its problem-solving approach based on the effectiveness of different strategies in various contexts.
 
@@ -237,12 +249,15 @@ We monitor the diversity of solutions generated at each state $\textcolor{lightb
 \begin{equation}
 \label{eq:momentum_trigger_v2}
 \begin{aligned}
-{\textbf{Trigger}}\left(\textcolor{lightblue}{\textcolor{lightblue}{\boldsymbol{s}}}\right) &\overset{{\textcolor{purple}{\star}}}{\iff} 
-\left\langle \textcolor{orange}{\boldsymbol{\mathcal{I}}}_k\left(\textcolor{lightblue}{\boldsymbol{s}}\right) \right\rangle_{\textcolor{purple}{\sim}} 
-\succ \boldsymbol{\theta}_{\textbf{sim}}\quad  
-\text{where} \left\langle \cdot \right\rangle_{\textcolor{purple}{\sim}} &\triangleq 
-\frac{1}{\binom{k}{2}} \sum_{{1 \leqslant i < j \leqslant k}} 
-\boldsymbol{\Phi}\left(\mathfrak{i}_i \parallel \mathfrak{i}_j\right)
+\textbf{Trigger}(s)
+&\overset{\star}{\iff}
+\left\langle \mathcal{I}_k(s) \right\rangle_{\sim}
+\succ \theta_{\mathrm{sim}}, \\
+\left\langle \cdot \right\rangle_{\sim}
+&\triangleq
+\frac{1}{\binom{k}{2}}
+\sum_{1 \leq i < j \leq k}
+\Phi\left(\mathfrak{i}_i \parallel \mathfrak{i}_j\right).
 \end{aligned}
 \end{equation}
 where $\boldsymbol{\Phi}\left(\mathfrak{i}_i \parallel \mathfrak{i}_j\right)$ computes the semantic similarity between solutions $\mathfrak{i}_i$ and $\mathfrak{i}_j$, and $\left\langle \cdot \right\rangle_{\textcolor{purple}{\sim}}$ represents the average pairwise similarity across all combinations of the $k$ recent solutions.
@@ -327,14 +342,15 @@ of about $+1.2\!\sim\!+3.6$ percentage points
 
 
 
-\begin{table}[ht]
-\scriptsize
+\begin{table*}[t]
+\small
 \centering
-\setlength{\tabcolsep}{6pt}
+\setlength{\tabcolsep}{4pt}
 \renewcommand{\arraystretch}{1.12}
 \caption{\textbf{Accuracy comparison of our method against prior search strategies on Coding benchmark.} Both solutions and 6 validation tests were generated using \texttt{GPT-4o-mini}. We run each method for 12 solutions. Metrics are \textbf{percentages} for pass@1 and Pass@\!$K$ (k=12).}
 \label{tab:pass_comparison}
 
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{l|%
 cc|%
 cc|%
@@ -371,37 +387,37 @@ Best of N & 88.12 & \runnerup{93.75} & 76.57 & 81.86 & 46.67 & 53.89 & \runnerup
 SFS (MCTS) & \runnerup{89.38} & \runnerup{94.38} & \runnerup{78.58} & \runnerup{83.88} & \runnerup{49.71} & \runnerup{55.48} &  22.50 & \runnerup{38.00} & 6.67 & \runnerup{13.96} \\
 \ours & \bestcell{90.00} & \bestcell{95.62} & \bestcell{78.84} & \bestcell{84.38} & \bestcell{52.53} & \bestcell{59.88} & 23.50 & \bestcell{39.00}& \bestcell{8.48} & \bestcell{16.97} \\
 \Xhline{1.2pt}
-\end{tabular} 
-\end{table} 
+\end{tabular}}
+\end{table*}
 
 Simply enabling a lightweight \emph{strategy pool} at expansion in SFS, it outperforms the SOTA SFS baseline across all code benchmarks like Figure~\ref{tab:pass_comparison}, without any additional optimization. Our method consistently lifts both Pass@1 and Pass@\!$K$: \textit{HumanEval} Pass@\!$K$ rises to 95.62\% (vs.\ 94.38\% for SFS), \textit{LeetCode} Pass@\!$K$ improves by +4.40 points to 59.88\%, and \textit{CodeContests} Pass@\!$K$ increases from 13.96\% to 16.97\%; we also see gains on \textit{MBPP+} (83.88\% vs.\ 84.38\%) and
 \textit{APPS} (38.00\% vs.\ 39.00\%). This reveals the untapped value of strategy diversification and lays the groundwork for our momentum method, positioning the \emph{strategy pool} as a broadly useful, plug-and-play enhancement.
 
 \subsection{Momentum-Inspired Optimization can help Scaling Inference}
 
-\begin{figure}[htbp]
+\begin{figure*}[t]
   \centering
-  \begin{subfigure}[t]{0.32\linewidth}
+  \begin{subfigure}[t]{0.32\textwidth}
     \centering
     \includegraphics[width=\linewidth]{fig/APPS_scaling_curve.pdf}
-    \caption{Our Momentum-Inspired Optimization on \textit{APPS}, our search method rise faster and attain the highest Pass@\!$K$ for 40 iterations.}
+    \caption{\textit{APPS}.}
     \label{fig:triple-a}
   \end{subfigure}\hfill
-   \begin{subfigure}[t]{0.33\linewidth}
+   \begin{subfigure}[t]{0.32\textwidth}
     \centering
     \includegraphics[width=\linewidth]{fig/CodeContests_scaling_curve.pdf}
-    \caption{Momentum-Inspired Optimization on \textit{CodeContests}, our search method rise faster and attain the highest Pass@\!$K$ for 40 iterations.}
+    \caption{\textit{CodeContests}.}
     \label{fig:triple-c}
   \end{subfigure}\hfill
-  \begin{subfigure}[t]{0.32\linewidth}
+  \begin{subfigure}[t]{0.32\textwidth}
     \centering
-    \includegraphics[width=0.92\linewidth]{fig/llm_nb_curve.pdf}
-    \caption{Momentum-Inspired Optimization on APPS  with different LLMs like GPT4.1, Llama3-8B, and Claude 3.5-haiku.}
+    \includegraphics[width=\linewidth]{fig/llm_nb_curve.pdf}
+    \caption{Backbone comparison on \textit{APPS}.}
     \label{fig:triple-b}
-  \end{subfigure}\hfill \vspace{-0.2cm}
+  \end{subfigure}
   \caption{Scaling results with momentum, all search methods in (a), (b), (c) run with 40 search budget and use the \emph{6 self-generated validations}. (a) and (b) use \textsc{CodeContests} and \textsc{APPS} dataset and GPT4-o-mini, (c) use \textsc{APPS} dataset and different kind of LLMs. }
   \label{fig:triple}
-\end{figure}
+\end{figure*}
 
 
 We observe that the momentum mechanism is most beneficial at \emph{larger} iteration budgets. With few iterations (e.g., $<\!10$), the trigger rarely fires, and all curves are close. 
@@ -414,16 +430,15 @@ momentum in breaking similarity plateaus and sustaining exploration.
 
 
 
-\begin{figure}[h]\vspace{-0.8cm}
+\begin{figure*}[t]
   \centering
-  \captionsetup[subfloat]{justification=centering}
-  % ---- (a) 左：表格 ----
-  \subfloat[Pass@\!$K$ on three hard coding benchmarks\label{tab:coding-split}]{
-    \begin{minipage}[t]{0.37\linewidth}\centering
-      \scriptsize\caption*{}
+  \begin{subfigure}[t]{0.32\textwidth}
+    \centering
+      \vspace{0pt}
       {\setlength{\aboverulesep}{0pt}\setlength{\belowrulesep}{0pt}%
-       \setlength{\tabcolsep}{3pt}% 紧一点以适应单栏三列排
-       \scalebox{0.97}{%
+       \setlength{\tabcolsep}{3pt}%
+       \scriptsize
+       \resizebox{\linewidth}{!}{%
        \begin{tabular}{l|ccc}
        \Xhline{1.2pt}
        \rowcolor{CadetBlue!20}
@@ -442,23 +457,26 @@ momentum in breaking similarity plateaus and sustaining exploration.
        \textbf{Ours2}               & \bestcell{63.13} & \bestcell{44.00} & \bestcell{20.61} \\
        \Xhline{1.2pt}
        \end{tabular}}}
-    \end{minipage}
-  }\hfill
-  % ---- (b) 中：图 ----
-  \subfloat[Workflow Improvement on SFS with Pass@\!$K$ (1–15).\label{fig:cc-vis-1}]{
-    \begin{minipage}[t]{0.3\linewidth}\centering
-      \includegraphics[width=0.95\linewidth]{fig/codecontests_pass_workflow.pdf}
-    \end{minipage}
-  }\hfill
-  % ---- (c) 右：图 ----
-  \subfloat[Momentum Improvement on SFS with Pass@\!$K$ (1–15).\label{fig:cc-vis-2}]{
-    \begin{minipage}[t]{0.29\linewidth}\centering
-      \includegraphics[width=0.95\linewidth]{fig/APPS_pass.pdf}
-    \end{minipage}
-  } 
-  \caption{\textbf{Momentum at a 16-iteration budget.} We fix the search to 16 iterations, both solutions and 6 validation tests were generated using \texttt{GPT-4o-mini}, where the momentum trigger is most active. \textit{(a)} Overall Pass@\!$K$ on three hard coding benchmarks (Leetcode, APPS, CodeContests). \emph{Ours1} = Strategy Pool only; \emph{Ours2} = Strategy Pool + Momentum.}\vspace{-0.3cm}
+    \caption{Hard coding benchmarks.}
+    \label{tab:coding-split}
+  \end{subfigure}\hfill
+  \begin{subfigure}[t]{0.32\textwidth}
+    \centering
+    \vspace{0pt}
+    \includegraphics[width=\linewidth]{fig/codecontests_pass_workflow.pdf}
+    \caption{Workflow improvement on SFS.}
+    \label{fig:cc-vis-1}
+  \end{subfigure}\hfill
+  \begin{subfigure}[t]{0.32\textwidth}
+    \centering
+    \vspace{0pt}
+    \includegraphics[width=\linewidth]{fig/APPS_pass.pdf}
+    \caption{Momentum improvement on SFS.}
+    \label{fig:cc-vis-2}
+  \end{subfigure}
+  \caption{\textbf{Momentum at a 16-iteration budget.} We fix the search to 16 iterations, both solutions and 6 validation tests were generated using \texttt{GPT-4o-mini}, where the momentum trigger is most active. \textit{(a)} Overall Pass@\!$K$ on three hard coding benchmarks (Leetcode, APPS, CodeContests). \emph{Ours1} = Strategy Pool only; \emph{Ours2} = Strategy Pool + Momentum.}
   \label{fig:overall-split-onecol-onerow}
-\end{figure}
+\end{figure*}
 
 We observe a clear monotonic pattern: models with stronger backbones exhibit faster early improvements and ultimately achieve higher Pass@\!$K$ scores at convergence. As Figure~\ref{fig:triple-b} shows, the strong model, like GPT4o, GPT4.1, quickly rises and stabilizes in the first 10 iterations, while the weak model, like Llama3-8B~\citep{grattafiori2024llama}, needs 40 iterations and is still slowly climbing. This indicates that the strong model can utilize momentum optimization more efficiently.
 
@@ -477,23 +495,22 @@ We observe a clear monotonic pattern: models with stronger backbones exhibit fas
 
 To examine whether our \textit{\textbf{Strategy Pool}} and \textit{\textbf{Momentum Mechanism}} improve solution diversity, we measure the solutions' similarity returned by each search algorithm on mainstream code generation benchmarks APPS, as Figure~\ref{fig:sim}. For the search algorithm (Line Search, Tree Search, Genetic Algorithm, SFS, and our method, our method is built on SFS and just adds the strategy pool and Momentum Mechanism to SFS. Ours1=\emph{Strategy Pool}, Ours2=\emph{Strategy Pool + Momentum}. We report four similarity metrics that are standard in plagiarism analysis: TF-IDF cosine similarity, Code-BERT similarity~\citep{feng2020codebert}, Levenshtein similarity, and token-sequence overlap score. Using 16 search budget and 6 self-generated validation tests, Ours2 yields the lowest similarity, and Ours1 yields the second best.
 
-\begin{wrapfigure}{r}{0.44\columnwidth} % {l}左，{r}右
-  \centering  \includegraphics[width=\linewidth]{fig/apps_similarity_2x2_grid.pdf}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{fig/apps_similarity_2x2_grid.pdf}
   \caption{Comparison of solution similarity metrics (TF–IDF, BERT, Levenshtein, and Token-sequence overlap) across methods on the APPS. }
   \label{fig:sim}
-\end{wrapfigure}
+\end{figure}
 
 
 We can observe that CodeBERT similarity is almost saturated ($0.997\!\sim\!0.999$) and thus offers little discriminative power across candidates. Therefore,  for the momentum trigger, we \emph{exclude} the BERT score and select other similarity scores as the similarity threshold $\boldsymbol{\theta}_{\textbf{sim}}$ and compute $\boldsymbol{\Phi} \left(\mathfrak{i}_i \parallel \mathfrak{i}_j\right)$ in \autoref{eq:momentum_trigger_v2}. Figure~\ref{fig:mylabel} studies the relation between \emph{solution diversity} and performance on \textsc{APPS}. We measure the average pairwise similarity among the $16$ candidates produced by each method with four standard metrics and report Pass@Any on the $y$-axis. Across all six methods (Line, Tree, Genetic, SFS, Ours1, Ours2), we observe a strong \textbf{negative} correlation between similarity and performance: \emph{lower} similarity (i.e., \emph{higher} diversity) is associated with \emph{higher} Pass@\!$Any$/Pass@\!$K$. Consistently, \textbf{Ours2} attains the \emph{lowest inter-solution similarity} while achieving the \emph{highest} Pass@\!$Any$, showing that the strategy pool increases diversity, while the momentum further amplifies it by injecting underused strategies.
 
-\vspace{-0.6em}
-
-\begin{figure}[htbp]
-\includegraphics[width=1.0\textwidth]{fig/similarity_vs_performance_with_legend.pdf}
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{fig/similarity_vs_performance_with_legend.pdf}
 \caption{\textbf{Diversity Analysis:} Lower Similarity Correlates with Higher Pass@\!$Any$ Performance in APPS dataset for 6 search method. \emph{Average} denotes the per-method mean of the four similarities.}
 \label{fig:mylabel}
-\end{figure}
-\vspace{-1.2em}
+\end{figure*}
 
 \subsubsection{Diversity Insight and Application}
 \label{diversity}
@@ -507,13 +524,12 @@ SFS on \textsc{CodeContests} (Fig.~\ref{fig:cc-vis-1}; improvements on Pass@1/10
 
 
 \subsection{Ablation Study}
-\begin{wrapfigure}{r}{0.37\columnwidth} % {l}左，{r}右
-  \vspace{-6pt}
-  \centering  \includegraphics[width=\linewidth]{fig/ablation_study_curve.pdf}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{fig/ablation_study_curve.pdf}
   \caption{Component ablation shows the momentum gains: the full Momentum module (red line) achieves the best Pass@K curve throughout 40 iterations}
   \label{fig:left-momentum}
-  \vspace{-8pt}
-\end{wrapfigure}
+\end{figure}
 Figure~\ref{fig:left-momentum} presents the component ablation study on the APPS benchmark. Using 40 search budget and 6 self-generated validation tests by GPT4-o-mini (without ground-truth), starting from the Baseline SFS, adding Reverse Thinking (simple strategy) gives a clear early-stage lift, but quickly plateaus. Introducing the Strategy Pool provides an additional mid-budget gain by injecting diverse reasoning styles. Adding Atomic Combine (gray solid), like crossover/mutation without any trigger, will yield only a small improvement. When we enable Momentum with a simple diversity trigger (only use one similarity trigger), the curve keeps climbing in later iterations, showing that rebalancing underused strategies helps escape local traps. Our \textit{Full Momentum} module (red), which uses the full similarity trigger. We employ \emph{three} diversity-based signals as momentum triggers: TF–IDF cosine, Levenshtein, and token-sequence overlap, exactly as defined in the diversity section. Using this composite similarity trigger together with $\varepsilon$-soft scheduling dominates the whole range and achieves the best Pass@\!$K$ by the $40^{\text{th}}$ iteration. The details of the ablation method will be shown in the Appendix ~\ref{apps:ablation}.
 
 
@@ -533,15 +549,12 @@ Figure~\ref{fig:left-momentum} presents the component ablation study on the APPS
 
 
 
-\begin{wrapfigure}{t}{0.4\textwidth}
+\begin{table}[t]
 \centering
-\fontsize{4.9}{4.9}\selectfont 
-\setlength{\tabcolsep}{6.4pt}
-\renewcommand{\arraystretch}{2}
-
-\begin{threeparttable}
-\begingroup
-\setlength{\arrayrulewidth}{0.6pt}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.12}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{l|ccc}
 \specialrule{\heavyrulewidth}{0pt}{0pt}
 \rowcolor{CadetBlue!18}
@@ -550,20 +563,15 @@ Figure~\ref{fig:left-momentum} presents the component ablation study on the APPS
 \multicolumn{1}{c}{\makecell{\textbf{Mind2Web-SC}\\(ACC$\uparrow$)}} &
 \multicolumn{1}{c}{\makecell{\textbf{EICU-AC}\\(ACC$\uparrow$)}} \\
 \specialrule{\lightrulewidth}{0pt}{0pt}
-
 AgentMonitor     & 0.00 & 72.50 & 88.50 \\
 \rowcolor{gray!10}LLaMAGuard       & 100.00 & 56.00 & 48.70 \\
 AGrail           & 8.75            & 98.46 & 94.59 \\
 \rowcolor{gray!10}\ourmethod (Strategy Pool)   & \bestcell{7.50} &  \bestcell{98.46} &   \bestcell{97.13}\\
 \specialrule{\heavyrulewidth}{0pt}{0pt}
-\end{tabular}
-\endgroup
-
-\captionof{table}{Metrics on AdvWeb (ASR↓), M2W-SC and EICU-AC (ACC↑).}
+\end{tabular}}
+\caption{Metrics on AdvWeb (ASR$\downarrow$), M2W-SC, and EICU-AC (ACC$\uparrow$).}
 \label{safety}
-\end{threeparttable}
-\vspace{-1mm}
-\end{wrapfigure}
+\end{table}
 
 We evaluate some test-time detection methods under three benchmarks: Mind2Web-SC~\citep{deng2023mind2web,xiang2025guardagent}, AdvWeb~\citep{xu2025advagent}, and EICU-AC~\citep{xiang2025guardagent}. A line of recent frameworks performs Test-Time Scaling (TTS) by iteratively refining safety checks while the agent operates, conceptually similar to BoN/MCTS-style search that selects an effective set of safe checks for each action type~\citep{luo-etal-2025-agrail,xiang2025guardagent}. These systems have shown strong results on the above datasets. Concretely, consider an OS agent asked to move a file: without safeguards, it may overwrite an existing file at the destination~\citep{xiang2025guardagent}. Building on prior results, we maintain that \emph{diverse reasoning strategies are critical}, as only heterogeneous checking trajectories expose the broader set of errors that would otherwise escape detection. Our \textit{Strategy Pool} is a drop-in addition to this TTS pipeline~\citep{luo-etal-2025-agrail}: by providing diverse reasoning strategies, it broadens the search over candidate checks and improves the reliability and coverage of safety monitoring like Table~\ref{safety}. More experiment details can be found in the Appendix~\ref{appendix:safe}.
 
